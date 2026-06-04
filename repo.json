@@ -1,0 +1,20 @@
+[
+  {
+    "Author": "Oreo",
+    "Name": "LittleLuxuries",
+    "InternalName": "LittleLuxuries",
+    "Punchline": "Small quality-of-life tweaks to make Eorzea a little more comfortable.",
+    "Description": "A collection of small quality-of-life tweaks designed to make your time in Eorzea more comfortable, one small luxury at a time. Use /llux to open the settings window.",
+    "RepoUrl": "https://github.com/devoreofox/LittleLuxuries",
+    "IconUrl": "https://raw.githubusercontent.com/devoreofox/LittleLuxuries/main/LittleLuxuries/images/icon.png",
+    "Tags": [
+      "utility"
+    ],
+    "DalamudApiLevel": 15,
+    "AssemblyVersion": "0.0.0.0",
+    "Version": "0.0.0.0",
+    "DownloadLinkInstall": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip",
+    "DownloadLinkUpdate": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip",
+    "DownloadLinkTesting": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip"
+  }
+]
