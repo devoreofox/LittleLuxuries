@@ -1,8 +1,10 @@
-﻿using Dalamud.Game.Command;
+﻿using System.Collections.Generic;
+using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using LittleLuxuries.Tweaks;
 using LittleLuxuries.Windows;
 
 namespace LittleLuxuries;
@@ -10,57 +12,78 @@ namespace LittleLuxuries;
 public sealed class Plugin : IDalamudPlugin
 {
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
-    [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+
+    [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+
+    [PluginService] internal static IClientState ClientState { get; private set; } = null!;
 
     private const string CommandName = "/llux";
+    private readonly HousingArrowHider _housingArrowHider;
 
     public Configuration Configuration { get; init; }
+    public List<Tweak> Tweaks { get; } = new();
 
-    public readonly WindowSystem WindowSystem = new("LittleLuxuries");
-    private ConfigWindow ConfigWindow { get; init; }
+    public readonly WindowSystem WindowSystem = new("Little Luxuries");
     private MainWindow MainWindow { get; init; }
 
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(this);
 
-        WindowSystem.AddWindow(ConfigWindow);
+        var housingArrowHider = new HousingArrowHider(AddonLifecycle, ClientState, Configuration);
+        _housingArrowHider = housingArrowHider;
+
+        Tweaks.Add(housingArrowHider);
+        Tweaks.Add(new PersonalEstateLabels());
+        Tweaks.Add(new PartyFinderCleanup());
+        Tweaks.Add(new DeterministicPosing());
+        Tweaks.Add(new CharacterSelectTweaks());
+
         WindowSystem.AddWindow(MainWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "A useful message to display in /xlhelp"
+            HelpMessage = "/llux → Open the Little Luxuries tweak window"
         });
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
-        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
+        PluginInterface.UiBuilder.OpenConfigUi += ToggleMainUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
     }
 
     public void Dispose()
     {
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
-        PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
 
         WindowSystem.RemoveAllWindows();
 
-        ConfigWindow.Dispose();
         MainWindow.Dispose();
+        _housingArrowHider.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
     }
 
     private void OnCommand(string command, string args)
     {
-        MainWindow.Toggle();
+        switch (args.Trim().ToLower())
+        {
+            case "hide":
+                Configuration.HideHousingArrows = true;
+                Configuration.Save();
+                break;
+            case "show":
+                Configuration.HideHousingArrows = false;
+                Configuration.Save();
+                break;
+            default:
+                MainWindow.Toggle();
+                break;
+        }
     }
 
-    public void ToggleConfigUi() => ConfigWindow.Toggle();
     public void ToggleMainUi() => MainWindow.Toggle();
 }
