@@ -3,7 +3,7 @@
   "Name": "Little Luxuries",
   "Punchline": "Small quality-of-life tweaks to make Eorzea a little more comfortable.",
   "Description": "A collection of small quality-of-life tweaks designed to make your time in Eorzea more comfortable, one small luxury at a time. Use /llux to open the settings window.",
-  "IconUrl": "https://raw.githubusercontent.com/devoreofox/LittleLuxuries/main/LittleLuxuries/images/icon.png"
+  "IconUrl": "https://raw.githubusercontent.com/devoreofox/LittleLuxuries/main/LittleLuxuries/images/icon.png",
   "ApplicableVersion": "any",
   "Tags": [
     "utility"
