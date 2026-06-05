@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.0.2
+
+### Fixed
+- Plugin icon now displays correctly after installation (oops lol)
+
 ## v0.0.0.1 - Initial Release
 
 ### Added
