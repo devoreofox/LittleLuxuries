@@ -14,7 +14,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
-    [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService] internal static INamePlateGui NamePlateGui { get; private set; } = null!;
 
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
 
@@ -33,7 +33,7 @@ public sealed class Plugin : IDalamudPlugin
 
         MainWindow = new MainWindow(this);
 
-        var housingArrowHider = new HousingArrowHider(AddonLifecycle, ClientState, Configuration);
+        var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, Configuration);
         _housingArrowHider = housingArrowHider;
 
         Tweaks.Add(housingArrowHider);
