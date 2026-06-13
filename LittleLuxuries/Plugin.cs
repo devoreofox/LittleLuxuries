@@ -16,6 +16,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] internal static INamePlateGui NamePlateGui { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+    [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
 
     [PluginService]
     internal static IObjectTable ObjectTable { get; private set; } = null!;
@@ -40,7 +41,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow = new MainWindow(this);
         _scanner = new FurnishingScanner(ObjectTable);
 
-        var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
+        var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
         _housingArrowHider = housingArrowHider;
@@ -67,6 +68,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
+        PluginInterface.UiBuilder.OpenConfigUi -= ToggleMainUi;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
 
         WindowSystem.RemoveAllWindows();

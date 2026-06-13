@@ -7,6 +7,7 @@ using Dalamud.Game.Gui.NamePlate;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using LittleLuxuries.Housing;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
@@ -19,12 +20,18 @@ public class HousingArrowHider : Tweak, IDisposable
 
     private readonly INamePlateGui namePlateGui;
     private readonly IClientState clientState;
+    private readonly IGameGui gameGui;
     private readonly FurnishingScanner scanner;
     private readonly Action toggleWhitelistWindow;
     private readonly Configuration configuration;
 
     private ulong _currentHousingId;
     private Dictionary<uint, string>? _activeWhitelist;
+
+    private readonly HashSet<FurnishingId> _highlighted = new();
+    private readonly Dictionary<FurnishingId, int> _highlightIndex = new();
+    private const uint HighlightColor = 0xFFFF7FB2;
+    private const uint DefaultColor = 0xFFFFFFFF;
 
     public ulong CurrentHousingId => _currentHousingId;
     public IReadOnlyDictionary<uint, string>? ActiveWhitelist => _activeWhitelist;
@@ -37,10 +44,11 @@ public class HousingArrowHider : Tweak, IDisposable
     private bool _zoneDirty;
     private string _blanketFilter = string.Empty;
 
-    public HousingArrowHider(INamePlateGui namePlateGui, IClientState clientState, FurnishingScanner scanner, Action toggleWhitelistWindow, Configuration configuration)
+    public HousingArrowHider(INamePlateGui namePlateGui, IClientState clientState, IGameGui gameGui, FurnishingScanner scanner, Action toggleWhitelistWindow, Configuration configuration)
     {
         this.namePlateGui = namePlateGui;
         this.clientState = clientState;
+        this.gameGui = gameGui;
         this.scanner = scanner;
         this.toggleWhitelistWindow = toggleWhitelistWindow;
         this.configuration = configuration;
@@ -79,6 +87,19 @@ public class HousingArrowHider : Tweak, IDisposable
         if (_activeWhitelist?.Remove(furnishingId.Value) == true) configuration.Save();
     }
 
+    public bool IsHighlighted(FurnishingId furnishingId) => _highlighted.Contains(furnishingId);
+
+    public void ToggleHighlight(FurnishingId furnishingId)
+    {
+        if (_highlighted.Remove(furnishingId))
+        {
+            if (_highlightIndex.Remove(furnishingId, out var index)) ResetHighlightColor(index);
+            return;
+        }
+        _highlighted.Add(furnishingId);
+        RestoreTargetable(furnishingId);
+    }
+
     private unsafe bool HasHousePermissions()
     {
         var mgr = HousingManager.Instance();
@@ -90,6 +111,8 @@ public class HousingArrowHider : Tweak, IDisposable
         if (HousingData.TerritoryIds.Contains(territory)) _zoneDirty = true;
         else (_currentHousingId, _activeWhitelist, _canManage, _zoneDirty) = (0, null, false, false);
         _untargeted.Clear();
+        _highlighted.Clear();
+        _highlightIndex.Clear();
     }
 
     private unsafe ulong ReadIndoorHouseId()
@@ -118,6 +141,28 @@ public class HousingArrowHider : Tweak, IDisposable
         _untargeted.Clear();
     }
 
+    private void RestoreTargetable(FurnishingId furnishingId)
+    {
+        if (!_untargeted.Remove(furnishingId)) return;
+        foreach (var furnishing in scanner.Enumerate())
+        {
+            if (furnishing.Id == furnishingId)
+            {
+                SetTargetable(furnishing.Address, true);
+                break;
+            }
+        }
+    }
+
+    private unsafe void ResetHighlightColor(int namePlateIndex)
+    {
+        var addon = gameGui.GetAddonByName("NamePlate");
+        if (addon.Address == nint.Zero) return;
+        var namePlate = (AddonNamePlate*)addon.Address;
+        var textNode = namePlate->NamePlateObjectArray[namePlateIndex].NameText;
+        if (textNode != null) *(uint*)&textNode->TextColor = DefaultColor;
+    }
+
     private void OnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers)
     {
         if (!configuration.HideHousingArrows) return;
@@ -143,6 +188,13 @@ public class HousingArrowHider : Tweak, IDisposable
 
             var id = FurnishingId.From(gameObject);
 
+            if (_highlighted.Contains(id))
+            {
+                _highlightIndex[id] = handler.NamePlateIndex;
+                handler.TextColor = HighlightColor;
+                RestoreIfUntargeted(id, gameObject);
+                continue;
+            }
             if (configuration.FurnishingWhitelist.Contains(gameObject.Name.TextValue))
             {
                 RestoreIfUntargeted(id, gameObject);

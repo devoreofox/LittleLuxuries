@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using LittleLuxuries.Housing;
 using LittleLuxuries.Tweaks;
@@ -77,7 +79,11 @@ public class ArrowWhitelistWindow : Window
             foreach (var furnishing in _furnishings.Where(f => f.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase)))
             {
                 any = true;
+                var icon = tweak.IsHighlighted(furnishing.Id) ? FontAwesomeIcon.EyeSlash : FontAwesomeIcon.Eye;
+
                 ImGui.PushID((int)furnishing.Id.Value);
+                if (ImGuiComponents.IconButton(icon)) tweak.ToggleHighlight(furnishing.Id);
+                ImGui.SameLine();
                 ImGui.Text(furnishing.Name);
                 ImGui.SameLine();
                 ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - buttonWidth);
