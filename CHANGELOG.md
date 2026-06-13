@@ -1,11 +1,29 @@
 # Changelog
 
-## v0.0.0.2
+## v0.0.0.3 - 2026-06-13
+
+### Added
+- Manage Arrows window - whitelist individual furnishings so their arrows stay visible while the rest are hidden; saved per house and remembered across sessions and game restarts
+- Each placed furnishing is tracked on its own, so whitelisting one of several identical pieces (say, one of two Summoning Bells) only affects that one
+- Prevent Interaction - stops hidden furnishings from being clickable so you can't accidentally target them
+- Always Display - keep arrows visible for entire furnishing types (Summoning Bell, Orchestrion, and the like), no matter which house you're in
+- Highlight - tints a furnishing's arrow pink from the Manage Arrows window so you can spot which piece an entry points to
+- Search bar in the Manage Arrows window for filtering furnishings by name
+- Whitelisting is limited to houses you own or have permission to edit
+
+### Fixed
+- Cleaned up an event handler that lingered when the plugin was reloaded
+
+### Notes
+- Per-furnishing whitelisting works inside houses you own; basic arrow hiding still works in any housing zone
+- Whitelist entries for furnishings you move or store are cleared automatically - just re-whitelist them in their new spot
+
+## v0.0.0.2 - 2026-06-05
 
 ### Fixed
 - Plugin icon now displays correctly after installation (oops lol)
 
-## v0.0.0.1 - Initial Release
+## v0.0.0.1 - 2026-06-05 - Initial Release
 
 ### Added
 - Hide Housing Arrows - hides the selection arrows that appear in housing areas, toggleable via the tweak manager
