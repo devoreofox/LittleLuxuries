@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using Dalamud.Game.ClientState.Objects.Types;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace LittleLuxuries.Housing;
 
@@ -21,6 +23,12 @@ public readonly struct FurnishingId : IEquatable<FurnishingId>
             hash = (hash ^ BitConverter.SingleToUInt32Bits(rotation))  * 16777619u;
             return new FurnishingId(hash);
         }
+    }
+
+    public static unsafe FurnishingId From(IGameObject gameObject)
+    {
+        var housingObject = (HousingObject*)gameObject.Address;
+        return Compute(housingObject->HousingObjectId.Id, gameObject.Position, gameObject.Rotation);
     }
 
     public bool Equals(FurnishingId other) => Value == other.Value;

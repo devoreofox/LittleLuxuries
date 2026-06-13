@@ -1,5 +1,6 @@
 ﻿using Dalamud.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace LittleLuxuries;
 
@@ -9,6 +10,10 @@ public class Configuration : IPluginConfiguration
     public int Version { get; set; } = 0;
 
     public bool HideHousingArrows { get; set; } = false;
+    public bool PreventInteraction { get; set; } = false;
+
+    public HashSet<string> FurnishingWhitelist { get; set; } = new();
+    public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
 
     public void Save()
     {
