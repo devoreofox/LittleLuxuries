@@ -21,6 +21,7 @@ public class HousingArrowHider : Tweak, IDisposable
     private readonly INamePlateGui namePlateGui;
     private readonly IClientState clientState;
     private readonly IGameGui gameGui;
+    private readonly IFramework framework;
     private readonly FurnishingScanner scanner;
     private readonly Action toggleWhitelistWindow;
     private readonly Configuration configuration;
@@ -44,16 +45,22 @@ public class HousingArrowHider : Tweak, IDisposable
     private bool _zoneDirty;
     private string _blanketFilter = string.Empty;
 
-    public HousingArrowHider(INamePlateGui namePlateGui, IClientState clientState, IGameGui gameGui, FurnishingScanner scanner, Action toggleWhitelistWindow, Configuration configuration)
+    private nint _movingAddress;
+    private int _pendingFrames;
+    private const int PendingPlacementFrames = 30;
+
+    public HousingArrowHider(INamePlateGui namePlateGui, IClientState clientState, IGameGui gameGui, IFramework framework, FurnishingScanner scanner, Action toggleWhitelistWindow, Configuration configuration)
     {
         this.namePlateGui = namePlateGui;
         this.clientState = clientState;
         this.gameGui = gameGui;
+        this.framework = framework;
         this.scanner = scanner;
         this.toggleWhitelistWindow = toggleWhitelistWindow;
         this.configuration = configuration;
 
         namePlateGui.OnDataUpdate += OnDataUpdate;
+        framework.Update += OnFrameworkUpdate;
         clientState.TerritoryChanged += OnTerritoryChanged;
 
         _zoneDirty = true;
@@ -62,7 +69,10 @@ public class HousingArrowHider : Tweak, IDisposable
     public void Dispose()
     {
         namePlateGui.OnDataUpdate -= OnDataUpdate;
+        framework.Update -= OnFrameworkUpdate;
+
         clientState.TerritoryChanged -= OnTerritoryChanged;
+        foreach (var index in _highlightIndex.Values) ResetHighlightColor(index);
         RestoreAllTargetable();
     }
 
@@ -108,11 +118,13 @@ public class HousingArrowHider : Tweak, IDisposable
 
     private void OnTerritoryChanged(uint territory)
     {
-        if (HousingData.TerritoryIds.Contains(territory)) _zoneDirty = true;
-        else (_currentHousingId, _activeWhitelist, _canManage, _zoneDirty) = (0, null, false, false);
+        (_currentHousingId, _activeWhitelist, _canManage) = (0, null, false);
+        _zoneDirty = HousingData.TerritoryIds.Contains(territory);
         _untargeted.Clear();
         _highlighted.Clear();
         _highlightIndex.Clear();
+        _movingAddress = 0;
+        _pendingFrames = 0;
     }
 
     private unsafe ulong ReadIndoorHouseId()
@@ -163,11 +175,25 @@ public class HousingArrowHider : Tweak, IDisposable
         if (textNode != null) *(uint*)&textNode->TextColor = DefaultColor;
     }
 
-    private void OnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers)
+    private unsafe nint MovingObjectAddress()
     {
-        if (!configuration.HideHousingArrows) return;
+        var mgr = HousingManager.Instance();
+        if (mgr == null || mgr->IndoorTerritory == null) return nint.Zero;
+        return (nint)mgr->IndoorTerritory->MovingHousingObject;
+    }
+
+    private void PruneStaleWhitelist()
+    {
+        if (_activeWhitelist == null) return;
+        var present = scanner.Enumerate().Select(f => f.Id.Value).ToHashSet();
+        var stale = _activeWhitelist.Keys.Where(k => !present.Contains(k)).ToList();
+        foreach (var k in stale) _activeWhitelist.Remove(k);
+        if (stale.Count > 0) configuration.Save();
+    }
+
+    private void OnFrameworkUpdate(IFramework framework)
+    {
         if (!HousingData.TerritoryIds.Contains(clientState.TerritoryType)) return;
-        if (!configuration.PreventInteraction) RestoreAllTargetable();
 
         if (_zoneDirty)
         {
@@ -180,6 +206,28 @@ public class HousingArrowHider : Tweak, IDisposable
                 _zoneDirty = false;
             }
         }
+
+        var moving = MovingObjectAddress();
+        if (moving != 0)
+        {
+            _movingAddress = moving;
+            return;
+        }
+
+        if (_movingAddress != 0)
+        {
+            _movingAddress = 0;
+            _pendingFrames = PendingPlacementFrames;
+        }
+
+        if (_pendingFrames > 0 && --_pendingFrames == 0) PruneStaleWhitelist();
+    }
+
+    private void OnDataUpdate(INamePlateUpdateContext context, IReadOnlyList<INamePlateUpdateHandler> handlers)
+    {
+        if (!configuration.HideHousingArrows) return;
+        if (!HousingData.TerritoryIds.Contains(clientState.TerritoryType)) return;
+        if (!configuration.PreventInteraction) RestoreAllTargetable();
 
         foreach (var handler in handlers)
         {

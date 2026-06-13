@@ -18,7 +18,6 @@ public class ArrowWhitelistWindow : Window
     private List<Furnishing> _furnishings = new();
 
     private string _filter = string.Empty;
-    private ulong _lastHouse;
 
     public ArrowWhitelistWindow(HousingArrowHider tweak, FurnishingScanner scanner) : base(
         "Arrow Whitelist##ArrowWhitelist")
@@ -33,14 +32,6 @@ public class ArrowWhitelistWindow : Window
         };
     }
 
-    public override void OnOpen() => Refresh();
-
-    private void Refresh()
-    {
-        _furnishings = scanner.Enumerate().ToList();
-        _lastHouse = tweak.CurrentHousingId;
-    }
-
     public override void Draw()
     {
         if (tweak.CurrentHousingId == 0)
@@ -48,14 +39,13 @@ public class ArrowWhitelistWindow : Window
             ImGui.TextDisabled("Enter a housing zone to manage arrows.");
             return;
         }
-
-        if (tweak.CurrentHousingId != _lastHouse) Refresh();
-
         if (!tweak.CanManageCurrentHouse)
         {
             ImGui.TextDisabled("You don't have permission to manage arrows in this house.");
             return;
         }
+
+        _furnishings = scanner.Enumerate().ToList();
 
         var active = tweak.ActiveWhitelist;
         var lineHeight= ImGui.GetTextLineHeightWithSpacing();
