@@ -30,6 +30,10 @@ public class HousingArrowHider : Tweak, IDisposable
     public IReadOnlyDictionary<uint, string>? ActiveWhitelist => _activeWhitelist;
 
     private readonly HashSet<FurnishingId> _untargeted = new();
+
+    private bool _canManage;
+    public bool CanManageCurrentHouse => _canManage;
+
     private bool _zoneDirty;
     private string _blanketFilter = string.Empty;
 
@@ -56,7 +60,7 @@ public class HousingArrowHider : Tweak, IDisposable
 
     public void AddToWhitelist(FurnishingId furnishingId, string name)
     {
-        if (_currentHousingId == 0) return;
+        if (_currentHousingId == 0 || !_canManage) return;
 
         if (!configuration.UserWhitelist.TryGetValue(_currentHousingId, out var dict))
         {
@@ -75,10 +79,16 @@ public class HousingArrowHider : Tweak, IDisposable
         if (_activeWhitelist?.Remove(furnishingId.Value) == true) configuration.Save();
     }
 
+    private unsafe bool HasHousePermissions()
+    {
+        var mgr = HousingManager.Instance();
+        return mgr != null && mgr->HasHousePermissions();
+    }
+
     private void OnTerritoryChanged(uint territory)
     {
         if (HousingData.TerritoryIds.Contains(territory)) _zoneDirty = true;
-        else (_currentHousingId, _activeWhitelist, _zoneDirty) = (0, null, false);
+        else (_currentHousingId, _activeWhitelist, _canManage, _zoneDirty) = (0, null, false, false);
         _untargeted.Clear();
     }
 
@@ -120,6 +130,7 @@ public class HousingArrowHider : Tweak, IDisposable
             if (id != 0)
             {
                 _currentHousingId = id;
+                _canManage = HasHousePermissions();
                 _activeWhitelist = configuration.UserWhitelist.GetValueOrDefault(id);
                 _zoneDirty = false;
             }

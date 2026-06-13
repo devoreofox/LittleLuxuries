@@ -15,6 +15,9 @@ public class ArrowWhitelistWindow : Window
     private readonly FurnishingScanner scanner;
     private List<Furnishing> _furnishings = new();
 
+    private string _filter = string.Empty;
+    private ulong _lastHouse;
+
     public ArrowWhitelistWindow(HousingArrowHider tweak, FurnishingScanner scanner) : base(
         "Arrow Whitelist##ArrowWhitelist")
     {
@@ -29,37 +32,51 @@ public class ArrowWhitelistWindow : Window
     }
 
     public override void OnOpen() => Refresh();
-    private void Refresh() => _furnishings = scanner.Enumerate().ToList();
 
-    public override void Draw()
-{
-    if (tweak.CurrentHousingId == 0)
+    private void Refresh()
     {
-        ImGui.TextDisabled("Enter a housing zone to manage arrows.");
-        return;
+        _furnishings = scanner.Enumerate().ToList();
+        _lastHouse = tweak.CurrentHousingId;
     }
 
-    var active = tweak.ActiveWhitelist;
-    var lineHeight  = ImGui.GetTextLineHeightWithSpacing();
-    var buttonWidth = ImGui.CalcTextSize("Whitelist").X + ImGui.GetStyle().FramePadding.X * 2 + 10f;
-    var whitelistedCount  = active?.Count ?? 0;
-    var whitelistedHeight = lineHeight * 3 + Math.Max(lineHeight, whitelistedCount * lineHeight);
-    var furnishingsHeight = Math.Max(100f, ImGui.GetContentRegionAvail().Y - whitelistedHeight - lineHeight);
-
-    ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), "Furnishings");
-    ImGui.Separator();
-    ImGui.Spacing();
-
-    if (ImGui.BeginChild("##furnishings", new Vector2(0, furnishingsHeight)))
+    public override void Draw()
     {
-        if (_furnishings.Count == 0)
+        if (tweak.CurrentHousingId == 0)
         {
-            ImGui.TextDisabled("No furnishings found.");
+            ImGui.TextDisabled("Enter a housing zone to manage arrows.");
+            return;
         }
-        else
+
+        if (tweak.CurrentHousingId != _lastHouse) Refresh();
+
+        if (!tweak.CanManageCurrentHouse)
         {
-            foreach (var furnishing in _furnishings)
+            ImGui.TextDisabled("You don't have permission to manage arrows in this house.");
+            return;
+        }
+
+        var active = tweak.ActiveWhitelist;
+        var lineHeight= ImGui.GetTextLineHeightWithSpacing();
+        var buttonWidth= ImGui.CalcTextSize("Whitelist").X + ImGui.GetStyle().FramePadding.X * 2 + 10f;
+
+        var whitelistedCount = active?.Count ?? 0;
+        var whitelistedHeight= lineHeight * 3 + Math.Max(lineHeight, whitelistedCount * lineHeight);
+        var furnishingsHeight= Math.Max(100f, ImGui.GetContentRegionAvail().Y - whitelistedHeight - lineHeight * 2);
+
+        ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), "Furnishings");
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        ImGui.SetNextItemWidth(-1);
+        ImGui.InputTextWithHint("##furnishingFilter", "Search...", ref _filter, 100);
+        ImGui.Spacing();
+
+        if (ImGui.BeginChild("##furnishings", new Vector2(0, furnishingsHeight)))
+        {
+            var any = false;
+            foreach (var furnishing in _furnishings.Where(f => f.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase)))
             {
+                any = true;
                 ImGui.PushID((int)furnishing.Id.Value);
                 ImGui.Text(furnishing.Name);
                 ImGui.SameLine();
@@ -67,42 +84,39 @@ public class ArrowWhitelistWindow : Window
 
                 if (active?.ContainsKey(furnishing.Id.Value) ?? false)
                 {
-                    if (ImGui.Button("Remove", new Vector2(buttonWidth, 0)))
-                        tweak.RemoveFromWhitelist(furnishing.Id);
+                    if (ImGui.Button("Remove", new Vector2(buttonWidth, 0))) tweak.RemoveFromWhitelist(furnishing.Id);
                 }
                 else
                 {
-                    if (ImGui.Button("Whitelist", new Vector2(buttonWidth, 0)))
-                        tweak.AddToWhitelist(furnishing.Id, furnishing.Name);
+                    if (ImGui.Button("Whitelist", new Vector2(buttonWidth, 0))) tweak.AddToWhitelist(furnishing.Id, furnishing.Name);
                 }
+                ImGui.PopID();
+            }
+            if (!any) ImGui.TextDisabled("No furnishings found.");
+        }
+        ImGui.EndChild();
+
+        ImGui.Spacing();
+        ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), "Whitelisted");
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        if (active is null || active.Count == 0)
+        {
+            ImGui.TextDisabled("No specific furnishings whitelisted for this house.");
+        }
+        else
+        {
+            foreach (var (idValue, name) in active.ToList())
+            {
+                ImGui.PushID($"wl{idValue}");
+                ImGui.Text(name);
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - buttonWidth);
+                if (ImGui.Button("Remove", new Vector2(buttonWidth, 0)))
+                    tweak.RemoveFromWhitelist(new FurnishingId(idValue));
                 ImGui.PopID();
             }
         }
     }
-    ImGui.EndChild();
-
-    ImGui.Spacing();
-
-    ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), "Whitelisted");
-    ImGui.Separator();
-    ImGui.Spacing();
-
-    if (active is null || active.Count == 0)
-    {
-        ImGui.TextDisabled("No specific furnishings whitelisted for this house.");
-    }
-    else
-    {
-        foreach (var (idValue, name) in active.ToList())
-        {
-            ImGui.PushID($"wl{idValue}");
-            ImGui.Text(name);
-            ImGui.SameLine();
-            ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - buttonWidth);
-            if (ImGui.Button("Remove", new Vector2(buttonWidth, 0)))
-                tweak.RemoveFromWhitelist(new FurnishingId(idValue));
-            ImGui.PopID();
-        }
-    }
-}
 }
