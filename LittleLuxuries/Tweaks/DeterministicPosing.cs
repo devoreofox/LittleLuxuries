@@ -6,6 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.Shell;
 using LittleLuxuries.Services.Dpose;
+using LittleLuxuries.UI;
 
 namespace LittleLuxuries.Tweaks;
 
@@ -76,7 +77,7 @@ public class DeterministicPosing : Tweak, IDisposable
                 return;
         }
 
-        if (!byte.TryParse(parts[1], out var index))
+        if (!byte.TryParse(parts[1], out var input))
         {
             chatGui.Print("Usage: /cpose <index> | list | help");
             return;
@@ -90,13 +91,15 @@ public class DeterministicPosing : Tweak, IDisposable
         }
 
         var max = controller.GetMaxPose(type.Value);
-        if (index > max)
+        var index = configuration.CposeOneBasedIndex ? input - 1 : input;
+        if (index < 0 || index > max)
         {
-            chatGui.Print($"Pose {index} is out of range (0-{max}) for {type}.");
+            var low = configuration.CposeOneBasedIndex ? 1 : 0;
+            var high = configuration.CposeOneBasedIndex ? max + 1 : max;
+            chatGui.Print($"Pose {input} is out of range ({low}-{high} for {type}).");
             return;
         }
-
-        controller.DriveTo(index);
+        controller.DriveTo((byte)index, configuration.CposeDelayMs);
     }
 
     private void PrintList()
@@ -108,7 +111,12 @@ public class DeterministicPosing : Tweak, IDisposable
             return;
         }
 
-        chatGui.Print($"{type}: 0-{controller.GetMaxPose(type.Value)} (current: {controller.GetCurrentPose()})");
+        var max = controller.GetMaxPose(type.Value);
+        var current = controller.GetCurrentPose() ?? 0;
+        if (configuration.CposeOneBasedIndex)
+            chatGui.Print($"{type}: 1-{max + 1} (current: {current + 1})");
+        else
+            chatGui.Print($"{type}: 0-{max} (current: {current})");
     }
     public override void DrawConfig()
     {
@@ -118,6 +126,23 @@ public class DeterministicPosing : Tweak, IDisposable
             configuration.DeterministicPosing = enabled;
             configuration.Save();
         }
+        ImGuiUtil.Tooltip("Enables /cpose <index> to jump directly to a pose.\nWhen off, /cpose behaves exactly like the game's built-in command.");
+
+        var delay = configuration.CposeDelayMs;
+        if (ImGui.SliderInt("Cycle delay (ms)", ref delay, 150, 1000))
+        {
+            configuration.CposeDelayMs = Math.Max(150, delay);
+            configuration.Save();
+        }
+        ImGuiUtil.Tooltip("Time between each step while cycling to your target pose.\nLower is faster; 150ms is the floor the game's pose timing allows.");
+
+        var oneBased = configuration.CposeOneBasedIndex;
+        if (ImGui.Checkbox("Number poses from 1", ref oneBased))
+        {
+            configuration.CposeOneBasedIndex = oneBased;
+            configuration.Save();
+        }
+        ImGuiUtil.Tooltip("Count poses starting at 1 instead of 0, so /cpose 1 is your first pose.\nOff uses the game's native 0-based numbering.");
 
         ImGui.Spacing();
         ImGui.TextWrapped("/cpose <index> - jump straight to a specific pose.");
@@ -131,8 +156,10 @@ public class DeterministicPosing : Tweak, IDisposable
 
         if (controller.IsPoseable())
         {
+            var current = controller.GetCurrentPose() ?? 0;
+            var display = configuration.CposeOneBasedIndex ? current + 1 : current;
             ImGui.Text($"Pose type: {controller.GetCurrentPoseType()}");
-            ImGui.Text($"Pose number: {controller.GetCurrentPose()}");
+            ImGui.Text($"Pose number: {display}");
         }
         else
         {

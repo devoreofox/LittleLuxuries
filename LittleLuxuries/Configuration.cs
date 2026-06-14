@@ -13,6 +13,8 @@ public class Configuration : IPluginConfiguration
     public bool PreventInteraction { get; set; } = false;
 
     public bool DeterministicPosing { get; set; } = false;
+    public bool CposeOneBasedIndex { get; set; } = true;
+    public int  CposeDelayMs       { get; set; } = 150;
 
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();

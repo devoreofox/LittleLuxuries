@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
-using LittleLuxuries.Housing;
 using LittleLuxuries.Services.Dpose;
+using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
 using LittleLuxuries.Windows;
 
@@ -84,7 +85,8 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
 
         MainWindow.Dispose();
-        _housingArrowHider.Dispose();
+
+        foreach (var tweak in Tweaks) (tweak as IDisposable)?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
 
@@ -93,20 +95,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
-        switch (args.Trim().ToLower())
-        {
-            case "hide":
-                Configuration.HideHousingArrows = true;
-                Configuration.Save();
-                break;
-            case "show":
-                Configuration.HideHousingArrows = false;
-                Configuration.Save();
-                break;
-            default:
-                MainWindow.Toggle();
-                break;
-        }
+        MainWindow.Toggle();
     }
 
     public void ToggleMainUi() => MainWindow.Toggle();

@@ -6,7 +6,8 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
-using LittleLuxuries.Housing;
+using LittleLuxuries.Models.Housing;
+using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
 
 namespace LittleLuxuries.Windows;

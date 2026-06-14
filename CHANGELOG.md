@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.0.0.4 - 2026-06-14
+
+### Added
+- Deterministic Posing - extends `/cpose` with an index so you can jump straight to a pose (`/cpose 3`) instead of cycling one at a time
+- `/cpose list` shows the poses available in your current stance; `/cpose help` shows usage
+- Options to set the cycle speed and to number poses from 1 instead of 0
+
+### Notes
+- Off by default - enable it in the tweak window
+- Plain `/cpose` still cycles exactly as before; the index only applies while standing, sitting, sitting on the ground, or dozing
+
 ## v0.0.0.3 - 2026-06-13
 
 ### Added

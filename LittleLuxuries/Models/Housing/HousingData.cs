@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace LittleLuxuries.Housing;
+namespace LittleLuxuries.Models.Housing;
 
 public static class HousingData
 {

@@ -16,7 +16,7 @@ public class CposeController : IDisposable
     private readonly IFramework framework;
 
     private CancellationTokenSource? _cts;
-    private const int PaceMs = 150; // TODO make this configurable
+    private const int MinDelayMs = 150;
 
     private static readonly HashSet<EmoteController.PoseType> Poseable = new()
     {
@@ -66,18 +66,20 @@ public class CposeController : IDisposable
 
     public byte GetMaxPose(EmoteController.PoseType type) => EmoteController.GetAvailablePoses(type);
 
-    public void DriveTo(byte target)
+    public void DriveTo(byte target, int delayMs)
     {
         var type = GetCurrentPoseType();
         if (type is null || !Poseable.Contains(type.Value) || target > GetMaxPose(type.Value)) return;
 
+        var pace = Math.Max(delayMs, MinDelayMs);
+
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
-        _ = DriveLoopAsync(target, type.Value, _cts.Token);
+        _ = DriveLoopAsync(target, type.Value, pace, _cts.Token);
     }
 
-    private async Task DriveLoopAsync(byte target, EmoteController.PoseType type, CancellationToken token)
+    private async Task DriveLoopAsync(byte target, EmoteController.PoseType type, int delayMs, CancellationToken token)
     {
         var maxSteps = (GetMaxPose(type) + 1) * 2;
         try
@@ -96,7 +98,7 @@ public class CposeController : IDisposable
                 });
 
                 if (stop) return;
-                await Task.Delay(PaceMs, token);
+                await Task.Delay(delayMs, token);
             }
         }
         catch (OperationCanceledException){ }

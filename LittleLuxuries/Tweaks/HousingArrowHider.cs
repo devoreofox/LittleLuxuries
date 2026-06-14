@@ -8,7 +8,9 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using LittleLuxuries.Housing;
+using LittleLuxuries.Models.Housing;
+using LittleLuxuries.Services.Housing;
+using LittleLuxuries.UI;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
 namespace LittleLuxuries.Tweaks;
@@ -272,6 +274,7 @@ public class HousingArrowHider : Tweak, IDisposable
             configuration.Save();
             if (!hideArrows) RestoreAllTargetable();
         }
+        ImGuiUtil.Tooltip("Hides the floating interaction arrows on furnishings while you're in a housing zone. Only interactive pieces have arrows, decorations are unaffected.");
 
         if (!configuration.HideHousingArrows) return;
 
@@ -283,6 +286,7 @@ public class HousingArrowHider : Tweak, IDisposable
             configuration.Save();
             if (!prevent) RestoreAllTargetable();
         }
+        ImGuiUtil.Tooltip("Also makes hidden furnishings unclickable so you can't accidentally target them. Whitelisted and highlighted pieces stay interactive.");
 
         if (ImGui.CollapsingHeader("Always Display"))
         {
@@ -304,8 +308,10 @@ public class HousingArrowHider : Tweak, IDisposable
                 }
             }
         }
+        ImGuiUtil.Tooltip("Furnishing types ticked here keep their arrows even while hiding is on. Matches by name, so it applies to every piece of that type, in any house.");
 
         ImGui.Spacing();
         if (ImGui.Button("Manage Arrows")) toggleWhitelistWindow();
+        ImGuiUtil.Tooltip("Open the per-house list to keep specific individual furnishings visible, or highlight one to spot which piece it is in-world.");
     }
 }

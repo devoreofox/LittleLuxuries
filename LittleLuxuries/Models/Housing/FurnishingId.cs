@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
-namespace LittleLuxuries.Housing;
+namespace LittleLuxuries.Models.Housing;
 
 public readonly struct FurnishingId : IEquatable<FurnishingId>
 {
