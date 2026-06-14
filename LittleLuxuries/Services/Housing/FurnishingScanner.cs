@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Dalamud.Plugin.Services;
+using LittleLuxuries.Models.Housing;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
-namespace LittleLuxuries.Housing;
+namespace LittleLuxuries.Services.Housing;
 
 public sealed class FurnishingScanner
 {

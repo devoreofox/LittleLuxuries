@@ -57,6 +57,7 @@ jobs:
           $files = @(
             "$output/LittleLuxuries.dll",
             "$output/LittleLuxuries.json",
+            "$output/ECommons.dll",
             "$output/LittleLuxuries.deps.json",
             "$output/images"
           )

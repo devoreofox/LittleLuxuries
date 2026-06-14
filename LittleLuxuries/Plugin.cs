@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using LittleLuxuries.Housing;
+using ECommons;
+using LittleLuxuries.Services.Dpose;
+using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
 using LittleLuxuries.Windows;
 
@@ -18,15 +21,16 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
-
-    [PluginService]
-    internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
+    [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
     private readonly FurnishingScanner _scanner;
 
     private readonly HousingArrowHider _housingArrowHider;
+    private readonly DeterministicPosing? _deterministicPosing;
 
     public Configuration Configuration { get; init; }
     public List<Tweak> Tweaks { get; } = new();
@@ -39,10 +43,15 @@ public sealed class Plugin : IDalamudPlugin
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
+        ECommonsMain.Init(PluginInterface, this);
+
         MainWindow = new MainWindow(this);
         _scanner = new FurnishingScanner(ObjectTable);
 
+        var cpose = new CposeController(ClientState, Framework);
+
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
+        var deterministicPosing = new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
         _housingArrowHider = housingArrowHider;
@@ -50,7 +59,8 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels());
         Tweaks.Add(new PartyFinderCleanup());
-        Tweaks.Add(new DeterministicPosing());
+        Tweaks.Add(deterministicPosing);
+        _deterministicPosing = deterministicPosing;
         Tweaks.Add(new CharacterSelectTweaks());
 
         WindowSystem.AddWindow(MainWindow);
@@ -75,27 +85,17 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
 
         MainWindow.Dispose();
-        _housingArrowHider.Dispose();
+
+        foreach (var tweak in Tweaks) (tweak as IDisposable)?.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+
+        ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string args)
     {
-        switch (args.Trim().ToLower())
-        {
-            case "hide":
-                Configuration.HideHousingArrows = true;
-                Configuration.Save();
-                break;
-            case "show":
-                Configuration.HideHousingArrows = false;
-                Configuration.Save();
-                break;
-            default:
-                MainWindow.Toggle();
-                break;
-        }
+        MainWindow.Toggle();
     }
 
     public void ToggleMainUi() => MainWindow.Toggle();
