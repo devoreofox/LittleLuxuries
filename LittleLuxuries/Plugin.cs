@@ -4,7 +4,9 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using ECommons;
 using LittleLuxuries.Housing;
+using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Tweaks;
 using LittleLuxuries.Windows;
 
@@ -39,10 +41,13 @@ public sealed class Plugin : IDalamudPlugin
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
+        ECommonsMain.Init(PluginInterface, this);
+
         MainWindow = new MainWindow(this);
         _scanner = new FurnishingScanner(ObjectTable);
 
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
+        var deterministicPose = new DeterministicPosing(new CposeController(ClientState));
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
         _housingArrowHider = housingArrowHider;
@@ -50,7 +55,7 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels());
         Tweaks.Add(new PartyFinderCleanup());
-        Tweaks.Add(new DeterministicPosing());
+        Tweaks.Add(deterministicPose);
         Tweaks.Add(new CharacterSelectTweaks());
 
         WindowSystem.AddWindow(MainWindow);
@@ -78,6 +83,8 @@ public sealed class Plugin : IDalamudPlugin
         _housingArrowHider.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+
+        ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string args)
