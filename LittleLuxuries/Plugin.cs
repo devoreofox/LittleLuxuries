@@ -47,7 +47,7 @@ public sealed class Plugin : IDalamudPlugin
         _scanner = new FurnishingScanner(ObjectTable);
 
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
-        var deterministicPose = new DeterministicPosing(new CposeController(ClientState));
+        var deterministicPose = new DeterministicPosing(new CposeController(ClientState, Framework));
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
         _housingArrowHider = housingArrowHider;
