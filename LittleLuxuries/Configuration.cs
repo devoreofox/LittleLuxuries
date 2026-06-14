@@ -12,6 +12,9 @@ public class Configuration : IPluginConfiguration
     public bool HideHousingArrows { get; set; } = false;
     public bool PreventInteraction { get; set; } = false;
 
+    public bool DeterministicPosing { get; set; } = false;
+
+
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
 

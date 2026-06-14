@@ -20,15 +20,16 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
-
-    [PluginService]
-    internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
+    [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
     private readonly FurnishingScanner _scanner;
 
     private readonly HousingArrowHider _housingArrowHider;
+    private readonly DeterministicPosing? _deterministicPosing;
 
     public Configuration Configuration { get; init; }
     public List<Tweak> Tweaks { get; } = new();
@@ -46,8 +47,10 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow = new MainWindow(this);
         _scanner = new FurnishingScanner(ObjectTable);
 
+        var cpose = new CposeController(ClientState, Framework);
+
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
-        var deterministicPose = new DeterministicPosing(new CposeController(ClientState, Framework));
+        var deterministicPosing = new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
         _housingArrowHider = housingArrowHider;
@@ -55,7 +58,8 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels());
         Tweaks.Add(new PartyFinderCleanup());
-        Tweaks.Add(deterministicPose);
+        Tweaks.Add(deterministicPosing);
+        _deterministicPosing = deterministicPosing;
         Tweaks.Add(new CharacterSelectTweaks());
 
         WindowSystem.AddWindow(MainWindow);
