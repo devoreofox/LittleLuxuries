@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.0.0.5 - 2026-06-19
+
+### Fixed
+- `/cpose <index>` now works immediately after sitting, lying down, or sitting on the ground. Previously the pose wasn't recognized until you pressed cpose once
+- Regular emotes (hum, dances, and the like) are no longer mistaken for an idle pose
+
 ## v0.0.0.4 - 2026-06-14
 
 ### Added

@@ -61,7 +61,18 @@ public class CposeController : IDisposable
     {
         var character = LocalCharacter();
         if (character is null) return null;
-        return character->EmoteController.CurrentPoseType;
+
+        var raw = (byte)character->EmoteController.CurrentPoseType;
+        if (raw != 0xFF) return (EmoteController.PoseType)raw;
+
+        var kind = character->EmoteController.GetPoseKind();
+        return kind switch
+        {
+            (int)EmoteController.PoseType.Sit
+                or (int)EmoteController.PoseType.GroundSit
+                or (int)EmoteController.PoseType.Doze => (EmoteController.PoseType)kind,
+            _ => null
+        };
     }
 
     public byte GetMaxPose(EmoteController.PoseType type) => EmoteController.GetAvailablePoses(type);
