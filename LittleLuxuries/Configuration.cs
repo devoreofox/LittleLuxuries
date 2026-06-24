@@ -16,6 +16,8 @@ public class Configuration : IPluginConfiguration
     public bool CposeOneBasedIndex { get; set; } = true;
     public int  CposeDelayMs       { get; set; } = 150;
 
+    public bool CopyContactNames { get; set; } = false;
+    public bool CopyContactWithWorld { get; set; } = true;
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();

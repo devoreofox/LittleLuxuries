@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.0.0.6 - 2026-06-23
+
+### Added
+- Contact Copy - adds a "Copy Name" option to the right-click menu in the Contact List (your recent players), copying a player's name to the clipboard
+- Option to include the home world, so you can copy `Name@World` or just the name on its own
+
+### Notes
+- Off by default - enable it in the tweak window
+
 ## v0.0.0.5 - 2026-06-19
 
 ### Fixed

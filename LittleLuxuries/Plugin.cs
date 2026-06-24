@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Command;
+using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
@@ -24,6 +26,8 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
+
+    [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
@@ -62,6 +66,7 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(deterministicPosing);
         _deterministicPosing = deterministicPosing;
         Tweaks.Add(new CharacterSelectTweaks());
+        Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
 
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(_arrowWhitelistWindow);
