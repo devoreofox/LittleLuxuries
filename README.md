@@ -8,6 +8,7 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 - **Personal Estate Labels** *(coming soon)* - Assign custom nicknames to shared estates and apartments in the teleport menu.
 - **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
 - **Deterministic Posing** - Extends `/cpose` to accept an index, jumping directly to a specific pose.
+- **Contact Copy** - Adds a "Copy Name" option to the Contact List right-click menu, copying a player's name (optionally with home world) to your clipboard.
 - **Character Select Tweaks** *(coming soon)* - Customise elements on the character select screen.
 
 ## Installation
