@@ -8,6 +8,10 @@ namespace LittleLuxuries;
 public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
+    public string? LastSeenVersion { get; set; }
+
+    public bool NewTweaksInitialized { get; set; } = false;
+    public HashSet<string> NewTweaks { get; set; } = new();
 
     public bool HideHousingArrows { get; set; } = false;
     public bool PreventInteraction { get; set; } = false;

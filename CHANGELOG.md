@@ -1,10 +1,28 @@
 # Changelog
 
-## v0.0.0.6 - 2026-06-23
+## v1.0.0.0 - 2026-06-26
+
+### New Tweaks
+- Estate Key:
+  - `/lock` and `/unlock` toggle your estate's guest access without opening the housing menus
+  - `/estatetp on|off` controls teleport permission on its own
+  - Optionally target a specific property (`personal`, `apartment`, `chambers`, `fc`), or leave it blank to use your first owned estate
+  - Locking or unlocking preserves your current teleport setting, so it only changes the access you asked for
 
 ### Added
-- Contact Copy - adds a "Copy Name" option to the right-click menu in the Contact List (your recent players), copying a player's name to the clipboard
-- Option to include the home world, so you can copy `Name@World` or just the name on its own
+- Changelog viewer - after an update, a window shows what's new; reopen any time via `/llux changelog` or the scroll icon in the tweak window's title bar
+- "New!" badge marks tweaks you haven't opened yet, clearing once you select them
+
+### Notes
+- Estate Key is off by default - enable it in the tweak window
+- Estate Key only works while you're on your home world and outside instanced content (dungeons, raids, and the like)
+
+## v0.0.0.6 - 2026-06-23
+
+### New Tweaks
+- Contact Copy:
+  - Adds a "Copy Name" option to the right-click menu in the Contact List (your recent players), copying a player's name to the clipboard
+  - Option to include the home world, so you can copy `Name@World` or just the name on its own
 
 ### Notes
 - Off by default - enable it in the tweak window
@@ -17,10 +35,11 @@
 
 ## v0.0.0.4 - 2026-06-14
 
-### Added
-- Deterministic Posing - extends `/cpose` with an index so you can jump straight to a pose (`/cpose 3`) instead of cycling one at a time
-- `/cpose list` shows the poses available in your current stance; `/cpose help` shows usage
-- Options to set the cycle speed and to number poses from 1 instead of 0
+### New Tweaks
+- Deterministic Posing:
+  - Extends `/cpose` with an index so you can jump straight to a pose (`/cpose 3`) instead of cycling one at a time
+  - `/cpose list` shows the poses available in your current stance; `/cpose help` shows usage
+  - Options to set the cycle speed and to number poses from 1 instead of 0
 
 ### Notes
 - Off by default - enable it in the tweak window
@@ -51,8 +70,11 @@
 
 ## v0.0.0.1 - 2026-06-05 - Initial Release
 
+### New Tweaks
+- Hide Housing Arrows:
+  - Hides the selection arrows that appear in housing areas, toggleable via the tweak manager
+
 ### Added
-- Hide Housing Arrows - hides the selection arrows that appear in housing areas, toggleable via the tweak manager
 - Two-panel tweak manager UI via `/llux` - selector on the left, description and configuration on the right
 - Filter bar for quickly finding tweaks by name
 - `/llux hide` and `/llux show` commands for toggling Hide Housing Arrows from chat
