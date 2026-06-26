@@ -11,8 +11,8 @@
       "utility"
     ],
     "DalamudApiLevel": 15,
-    "AssemblyVersion": "0.0.0.6",
-    "Version": "0.0.0.6",
+    "AssemblyVersion": "1.0.0.0",
+    "Version": "1.0.0.0",
     "DownloadLinkInstall": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip",
     "DownloadLinkUpdate": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip",
     "DownloadLinkTesting": "https://github.com/devoreofox/LittleLuxuries/releases/latest/download/LittleLuxuries.zip"
