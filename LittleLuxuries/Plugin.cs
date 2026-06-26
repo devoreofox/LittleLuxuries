@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Dalamud.Bindings.ImGui;
+using System.Reflection;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
@@ -26,15 +25,13 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
-
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
+    [PluginService] internal static ICondition Condition { get; private set; } = null!;
+    [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
     private readonly FurnishingScanner _scanner;
-
-    private readonly HousingArrowHider _housingArrowHider;
-    private readonly DeterministicPosing? _deterministicPosing;
 
     public Configuration Configuration { get; init; }
     public List<Tweak> Tweaks { get; } = new();
@@ -42,6 +39,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("Little Luxuries");
     private MainWindow MainWindow { get; init; }
     private ArrowWhitelistWindow _arrowWhitelistWindow = null!;
+    private ChangelogWindow ChangelogWindow { get; init; }
 
     public Plugin()
     {
@@ -49,7 +47,8 @@ public sealed class Plugin : IDalamudPlugin
 
         ECommonsMain.Init(PluginInterface, this);
 
-        MainWindow = new MainWindow(this);
+        MainWindow = new MainWindow(this, ToggleChangelogUi);
+        ChangelogWindow = new ChangelogWindow();
         _scanner = new FurnishingScanner(ObjectTable);
 
         var cpose = new CposeController(ClientState, Framework);
@@ -58,27 +57,52 @@ public sealed class Plugin : IDalamudPlugin
         var deterministicPosing = new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
-        _housingArrowHider = housingArrowHider;
+
+        var estateAccess = new EstateAccessController(ClientState, Condition, AddonLifecycle, GameInterop);
 
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels());
         Tweaks.Add(new PartyFinderCleanup());
         Tweaks.Add(deterministicPosing);
-        _deterministicPosing = deterministicPosing;
         Tweaks.Add(new CharacterSelectTweaks());
         Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
+        Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));
+        Tweaks.Add(new CommendQueue());
+        Tweaks.Add(new BlindFaith());
+
+        if (!Configuration.NewTweaksInitialized)
+        {
+            var newThisRelease = new HashSet<string> { "Estate Key" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
+
+            foreach (var tweak in Tweaks)
+            {
+                if (!newThisRelease.Contains(tweak.Name)) Configuration.NewTweaks.Add(tweak.Name);
+            }
+            Configuration.NewTweaksInitialized = true;
+            Configuration.Save();
+        }
 
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(_arrowWhitelistWindow);
+        WindowSystem.AddWindow(ChangelogWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
-            HelpMessage = "/llux → Open the Little Luxuries tweak window"
+            HelpMessage = "/llux → Open the Little Luxuries tweak window.\n" +
+                          "/llux changelog → Open the Little Luxuries changelog window."
         });
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi += ToggleMainUi;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+
+        var current = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        if (Configuration.LastSeenVersion != current)
+        {
+            ChangelogWindow.IsOpen = true;
+            Configuration.LastSeenVersion = current;
+            Configuration.Save();
+        }
     }
 
     public void Dispose()
@@ -90,6 +114,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
 
         MainWindow.Dispose();
+        ChangelogWindow.Dispose();
 
         foreach (var tweak in Tweaks) (tweak as IDisposable)?.Dispose();
 
@@ -100,8 +125,13 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
-        MainWindow.Toggle();
+        switch (args.Trim().ToLowerInvariant())
+        {
+            case "changelog": ToggleChangelogUi(); break;
+            default: MainWindow.Toggle(); break;
+        }
     }
 
     public void ToggleMainUi() => MainWindow.Toggle();
+    public void ToggleChangelogUi() => ChangelogWindow.Toggle();
 }

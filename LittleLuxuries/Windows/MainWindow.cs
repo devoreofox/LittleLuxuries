@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using LittleLuxuries.Tweaks;
 
@@ -13,14 +14,20 @@ public class MainWindow : Window, IDisposable
     private string _filter = string.Empty;
     private Tweak? _selectedTweak;
 
-    public MainWindow(Plugin plugin)
-        : base("Little Luxuries##Main", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    public MainWindow(Plugin plugin, Action openChangelog) : base("Little Luxuries###Main", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(700, 400),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
+
+        TitleBarButtons.Add(new TitleBarButton
+        {
+            Icon = FontAwesomeIcon.Scroll,
+            Click = _ => openChangelog(),
+            ShowTooltip = () => ImGui.SetTooltip("Changelog")
+        });
 
         this.plugin = plugin;
         _selectedTweak = plugin.Tweaks.FirstOrDefault();
@@ -31,7 +38,7 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         var scale = ImGui.GetIO().FontGlobalScale;
-        var leftWidth = new Vector2(200 * scale, 0);
+        var leftWidth = new Vector2(225 * scale, 0);
 
         ImGui.BeginChild("###tweakSelector", leftWidth, true);
 
@@ -43,7 +50,25 @@ public class MainWindow : Window, IDisposable
 
         foreach (var tweak in filtered)
         {
-            if (ImGui.Selectable(tweak.Name, _selectedTweak == tweak)) _selectedTweak = tweak;
+            var isNew = !plugin.Configuration.NewTweaks.Contains(tweak.Name);
+
+            if (ImGui.Selectable(tweak.Name, _selectedTweak == tweak))
+            {
+                _selectedTweak = tweak;
+                if (isNew)
+                {
+                    plugin.Configuration.NewTweaks.Add(tweak.Name);
+                    plugin.Configuration.Save();
+                }
+            }
+
+            if (isNew)
+            {
+                const string badge = "New!";
+                var width = ImGui.CalcTextSize(badge).X;
+                ImGui.SameLine(ImGui.GetContentRegionMax().X - width - ImGui.GetStyle().ItemSpacing.X);
+                ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), badge);
+            }
         }
 
         ImGui.EndChild();

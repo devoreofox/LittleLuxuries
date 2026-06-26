@@ -4,12 +4,15 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 
 ## Tweaks
 
-- **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
-- **Personal Estate Labels** *(coming soon)* - Assign custom nicknames to shared estates and apartments in the teleport menu.
-- **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
-- **Deterministic Posing** - Extends `/cpose` to accept an index, jumping directly to a specific pose.
-- **Contact Copy** - Adds a "Copy Name" option to the Contact List right-click menu, copying a player's name (optionally with home world) to your clipboard.
+- **Blind Faith** *(coming soon)* - Hides other players inside Leap of Faith courses so the platforms stay clear.
 - **Character Select Tweaks** *(coming soon)* - Customise elements on the character select screen.
+- **Commend Queue** *(coming soon)* - Queue your commendation for a player mid-duty and have it awarded automatically when the duty ends.
+- **Contact Copy** - Adds a "Copy Name" option to the Contact List right-click menu, copying a player's name (optionally with home world) to your clipboard.
+- **Deterministic Posing** - Extends `/cpose` to accept an index, jumping directly to a specific pose.
+- **Estate Key** - Lock or unlock your estate's guest access and toggle teleport permission from chat, without opening the housing menus.
+- **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
+- **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
+- **Personal Estate Labels** *(coming soon)* - Assign custom nicknames to shared estates and apartments in the teleport menu.
 
 ## Installation
 
@@ -28,8 +31,12 @@ Type `/llux` in-game to open the tweak manager. Select a tweak from the left pan
 ### Commands
 
 - `/llux` - Open the tweak manager
-- `/llux hide` - Enable Hide Housing Arrows
-- `/llux show` - Disable Hide Housing Arrows
+- `/llux changelog` - Open the changelog window
+- `/lock [target]` - Lock your estate's guest access (Estate Key)
+- `/unlock [target]` - Unlock your estate's guest access (Estate Key)
+- `/estatetp on|off [target]` - Toggle estate teleport permission (Estate Key)
+
+`target` is optional for the Estate Key commands - `personal`, `apartment`, `chambers`, or `fc`. Leave it blank to use your first owned estate. These commands work only while on your home world and outside instanced content.
 
 ## Contributing
 
