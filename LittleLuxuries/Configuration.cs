@@ -19,6 +19,8 @@ public class Configuration : IPluginConfiguration
     public bool CopyContactNames { get; set; } = false;
     public bool CopyContactWithWorld { get; set; } = true;
 
+    public bool EstateKey { get; set; } = false;
+
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
 

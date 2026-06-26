@@ -26,15 +26,13 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
-
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
+    [PluginService] internal static ICondition Condition { get; private set; } = null!;
+    [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
     private readonly FurnishingScanner _scanner;
-
-    private readonly HousingArrowHider _housingArrowHider;
-    private readonly DeterministicPosing? _deterministicPosing;
 
     public Configuration Configuration { get; init; }
     public List<Tweak> Tweaks { get; } = new();
@@ -58,15 +56,16 @@ public sealed class Plugin : IDalamudPlugin
         var deterministicPosing = new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
-        _housingArrowHider = housingArrowHider;
+
+        var estateAccess = new EstateAccessController(ClientState, Condition, AddonLifecycle, GameInterop);
 
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels());
         Tweaks.Add(new PartyFinderCleanup());
         Tweaks.Add(deterministicPosing);
-        _deterministicPosing = deterministicPosing;
         Tweaks.Add(new CharacterSelectTweaks());
         Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
+        Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));
 
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(_arrowWhitelistWindow);
