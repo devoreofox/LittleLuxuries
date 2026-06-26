@@ -28,8 +28,7 @@ public sealed class EstateKey : Tweak, IDisposable
     }
 
     public override string Name => "Estate Lock";
-    public override string Description =>
-        "Adds /lock and /unlock to toggle your estate's guest access without opening the housing menus, plus /estatetp to control teleport permission. Works from anywhere on your home world.";
+    public override string Description => "Adds /lock and /unlock to toggle your estate's guest access without opening the housing menus, plus /estatetp to control teleport permission. Works from anywhere on your home world.";
     public override bool IsImplemented => true;
 
     public void Dispose()
