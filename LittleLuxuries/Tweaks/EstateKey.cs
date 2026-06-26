@@ -22,12 +22,9 @@ public sealed class EstateKey : Tweak, IDisposable
         this.commands = commands;
         this.chatGui = chatGui;
 
-        commands.AddHandler("/lock", new CommandInfo(OnAccessCommand)
-            { HelpMessage = "Lock your estate's guest access. Optional: personal | apartment | chambers | fc" });
-        commands.AddHandler("/unlock", new CommandInfo(OnAccessCommand)
-            { HelpMessage = "Unlock your estate's guest access. Optional: personal | apartment | chambers | fc" });
-        commands.AddHandler("/estatetp", new CommandInfo(OnTeleportCommand)
-            { HelpMessage = "Toggle estate teleport. Usage: /estatetp on|off [target]" });
+        commands.AddHandler("/lock", new CommandInfo(OnAccessCommand) { HelpMessage = "Lock your estate's guest access. Optional: personal | apartment | chambers | fc" });
+        commands.AddHandler("/unlock", new CommandInfo(OnAccessCommand) { HelpMessage = "Unlock your estate's guest access. Optional: personal | apartment | chambers | fc" });
+        commands.AddHandler("/estatetp", new CommandInfo(OnTeleportCommand) { HelpMessage = "Toggle estate teleport. Usage: /estatetp on|off [target]" });
     }
 
     public override string Name => "Estate Lock";
@@ -91,7 +88,7 @@ public sealed class EstateKey : Tweak, IDisposable
         estate = null;
         switch (arg.Trim().ToLowerInvariant())
         {
-            case "": return true;                                                       // cascade to first owned
+            case "": return true;
             case "p": case "personal":  estate = EstateType.PersonalEstate;   return true;
             case "a": case "apartment": estate = EstateType.ApartmentRoom;    return true;
             case "c": case "chambers":  estate = EstateType.PersonalChambers; return true;
