@@ -1,4 +1,3 @@
-// Tweaks/PartyFinderCleanup.cs
 namespace LittleLuxuries.Tweaks;
 
 public class PartyFinderCleanup : Tweak

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
-using LittleLuxuries.Services;
 using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
@@ -71,10 +67,12 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(new CharacterSelectTweaks());
         Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
         Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));
+        Tweaks.Add(new CommendQueue());
+        Tweaks.Add(new BlindFaith());
 
         if (!Configuration.NewTweaksInitialized)
         {
-            var newThisRelease = new HashSet<string> { "Estate Key" }; //Remove on next release (please don't forget Oreo god x-x) Yes this is for you, whoever is reading these. >:(
+            var newThisRelease = new HashSet<string> { "Estate Key" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
 
             foreach (var tweak in Tweaks)
             {

@@ -16,6 +16,7 @@
 ### Notes
 - Estate Key is off by default - enable it in the tweak window
 - Estate Key only works while you're on your home world and outside instanced content (dungeons, raids, and the like)
+- Stray kittens can now be kept at a respectful distance ;3
 
 ## v0.0.0.6 - 2026-06-23
 

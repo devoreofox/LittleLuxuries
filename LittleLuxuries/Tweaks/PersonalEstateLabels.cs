@@ -1,4 +1,3 @@
-// Tweaks/PersonalEstateLabels.cs
 namespace LittleLuxuries.Tweaks;
 
 public class PersonalEstateLabels : Tweak

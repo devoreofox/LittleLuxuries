@@ -1,4 +1,3 @@
-// Tweaks/CharacterSelectTweaks.cs
 namespace LittleLuxuries.Tweaks;
 
 public class CharacterSelectTweaks : Tweak
