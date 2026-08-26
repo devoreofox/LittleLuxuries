@@ -28,6 +28,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
     [PluginService] internal static ICondition Condition { get; private set; } = null!;
     [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
@@ -67,12 +68,12 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(new CharacterSelectTweaks());
         Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
         Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));
-        Tweaks.Add(new CommendQueue());
+        Tweaks.Add(new CommendQueue(ContextMenu, Condition, ChatGui, ClientState, PartyList, Framework, Configuration));
         Tweaks.Add(new BlindFaith());
 
         if (!Configuration.NewTweaksInitialized)
         {
-            var newThisRelease = new HashSet<string> { "Estate Key" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
+            var newThisRelease = new HashSet<string> { "Commend Queue" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
 
             foreach (var tweak in Tweaks)
             {

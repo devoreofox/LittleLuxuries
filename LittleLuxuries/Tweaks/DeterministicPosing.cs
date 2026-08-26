@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Hooking;
 using Dalamud.Plugin.Services;
@@ -49,6 +50,9 @@ public class DeterministicPosing : Tweak, IDisposable
                 var parts = message->ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length > 0 && parts[0].Equals("/cpose", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (parts.Length > 1 && parts[1].Equals("motion", StringComparison.OrdinalIgnoreCase))
+                        parts = parts.Where((p, i) => i != 1).ToArray();
+
                     if (parts.Length == 1) processChatInputHook.Original(shellCommandModule, message, uiModule);
                     else HandleCpose(parts);
                     return;
