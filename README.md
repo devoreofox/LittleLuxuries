@@ -6,13 +6,14 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 
 - **Blind Faith** *(coming soon)* - Hides other players inside Leap of Faith courses so the platforms stay clear.
 - **Character Select Tweaks** *(coming soon)* - Customise elements on the character select screen.
-- **Commend Queue** *(coming soon)* - Queue your commendation for a player mid-duty and have it awarded automatically when the duty ends.
+- **Commend Queue** - Queue your commendation for a player mid-duty and have it awarded automatically when the duty ends.
 - **Contact Copy** - Adds a "Copy Name" option to the Contact List right-click menu, copying a player's name (optionally with home world) to your clipboard.
 - **Deterministic Posing** - Extends `/cpose` to accept an index, jumping directly to a specific pose.
 - **Estate Key** - Lock or unlock your estate's guest access and toggle teleport permission from chat, without opening the housing menus.
 - **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
 - **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
 - **Personal Estate Labels** *(coming soon)* - Assign custom nicknames to shared estates and apartments in the teleport menu.
+- **Quick Commands** - Chat shortcuts for common interactions: target the nearest object, accept a duty, enter a house or apartment, and use an inventory item by name.
 
 ## Installation
 
@@ -35,6 +36,10 @@ Type `/llux` in-game to open the tweak manager. Select a tweak from the left pan
 - `/lock [target]` - Lock your estate's guest access (Estate Key)
 - `/unlock [target]` - Unlock your estate's guest access (Estate Key)
 - `/estatetp on|off [target]` - Toggle estate teleport permission (Estate Key)
+- `/targetnearest` - Target the nearest interactable object (Quick Commands)
+- `/acceptduty` - Press Commence on the Duty Ready popup (Quick Commands)
+- `/enterhouse [room]` - Enter the nearest house or apartment, optionally a specific apartment room number (Quick Commands)
+- `/itemaction <item name>` - Use an inventory item by its name (Quick Commands)
 
 `target` is optional for the Estate Key commands - `personal`, `apartment`, `chambers`, or `fc`. Leave it blank to use your first owned estate. These commands work only while on your home world and outside instanced content.
 

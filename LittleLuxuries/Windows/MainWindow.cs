@@ -14,7 +14,7 @@ public class MainWindow : Window, IDisposable
     private string _filter = string.Empty;
     private Tweak? _selectedTweak;
 
-    public MainWindow(Plugin plugin, Action openChangelog) : base("Little Luxuries###Main", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    public MainWindow(Plugin plugin, Action openChangelog) : base("Little Luxuries###llux-main", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         SizeConstraints = new WindowSizeConstraints
         {

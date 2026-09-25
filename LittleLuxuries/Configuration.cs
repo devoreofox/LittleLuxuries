@@ -27,6 +27,8 @@ public class Configuration : IPluginConfiguration
 
     public bool CommendQueue { get; set; } = false;
 
+    public bool QuickCommands { get; set; } = false;
+
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
 

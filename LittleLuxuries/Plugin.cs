@@ -70,10 +70,11 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));
         Tweaks.Add(new CommendQueue(ContextMenu, Condition, ChatGui, ClientState, PartyList, Framework, Configuration));
         Tweaks.Add(new BlindFaith());
+        Tweaks.Add(new QuickCommands(CommandManager, ObjectTable, ClientState, ChatGui, Framework, Configuration));
 
         if (!Configuration.NewTweaksInitialized)
         {
-            var newThisRelease = new HashSet<string> { "Commend Queue" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
+            var newThisRelease = new HashSet<string> { "Commend Queue", "Quick Commands" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
 
             foreach (var tweak in Tweaks)
             {

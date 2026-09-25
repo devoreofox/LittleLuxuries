@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.1.0.0 - 2026-09-25
+
+### New Tweaks
+- Commend Queue:
+  - Right-click a party member during a duty and choose "Commend at Duty End" to queue your commendation
+  - Right-click again to cancel, or pick someone else to swap your choice at any time
+  - The queued player is commended automatically when the duty ends
+  - Yourself and anyone already in your party when you queued are skipped, so they aren't offered
+- Quick Commands:
+  - `/targetnearest` - target the nearest interactable object (housing door, entrance, aetheryte, and the like)
+  - `/acceptduty` - press Commence on the Duty Ready popup
+  - `/enterhouse` - interact with the nearest house or apartment entrance and confirm entry for you; add a room number (`/enterhouse 12`) to enter a specific apartment
+  - `/itemaction <item name>` - use an inventory item by its name (potions, tinctures, glamour prisms, and the like)
+
+### Fixed
+- Stopped Little Luxuries from insisting on holding hands with Silkstring if both plugins were installed
+
+### Notes
+- Both tweaks are off by default - enable them in the tweak window
+- Commend Queue can't be toggled while you're in a duty; leave the duty to change it
+
 ## v1.0.0.0 - 2026-06-26
 
 ### New Tweaks
