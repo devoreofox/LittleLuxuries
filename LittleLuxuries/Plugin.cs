@@ -29,6 +29,9 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ICondition Condition { get; private set; } = null!;
     [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
     [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
+    [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+
+    [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
 
     private const string CommandName = "/llux";
 
@@ -62,7 +65,7 @@ public sealed class Plugin : IDalamudPlugin
         var estateAccess = new EstateAccessController(ClientState, Condition, AddonLifecycle, GameInterop);
 
         Tweaks.Add(housingArrowHider);
-        Tweaks.Add(new PersonalEstateLabels());
+        Tweaks.Add(new PersonalEstateLabels(DataManager, ClientState, PlayerState, Configuration, AddonLifecycle));
         Tweaks.Add(new PartyFinderCleanup());
         Tweaks.Add(deterministicPosing);
         Tweaks.Add(new CharacterSelectTweaks());

@@ -12,7 +12,7 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 - **Estate Key** - Lock or unlock your estate's guest access and toggle teleport permission from chat, without opening the housing menus.
 - **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
 - **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
-- **Personal Estate Labels** *(coming soon)* - Assign custom nicknames to shared estates and apartments in the teleport menu.
+- **Personal Estate Labels** - Give your estates, shared estates and apartment custom names in the Teleport menu, optionally with ward and plot shown alongside, and reorder them to taste.
 - **Quick Commands** - Chat shortcuts for common interactions: target the nearest object, accept a duty, enter a house or apartment, and use an inventory item by name.
 
 ## Installation

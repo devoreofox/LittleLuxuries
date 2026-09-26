@@ -13,12 +13,20 @@
   - `/acceptduty` - press Commence on the Duty Ready popup
   - `/enterhouse` - interact with the nearest house or apartment entrance and confirm entry for you; add a room number (`/enterhouse 12`) to enter a specific apartment
   - `/itemaction <item name>` - use an inventory item by its name (potions, tinctures, glamour prisms, and the like)
+- Personal Estate Labels:
+  - Give your personal estate, shared estates and apartment custom names in the Teleport menu's Residential Areas
+  - Labelled rows show the district alongside your label, e.g. "The Lavender Beds - Home"
+  - Reorder your residential rows so your favourite place sits at the top
+  - Option to show the ward and plot (or apartment room) next to the district, e.g. "The Lavender Beds (W13 P18)"
+  - Option to show the label before the location instead of after
+  - Labels are kept per character, and each character's estates are picked up the first time you open Teleport on them
+  - "Forget" removes an estate you've moved out of, along with its label
 
 ### Fixed
 - Stopped Little Luxuries from insisting on holding hands with Silkstring if both plugins were installed
 
 ### Notes
-- Both tweaks are off by default - enable them in the tweak window
+- All three tweaks are off by default - enable them in the tweak window
 - Commend Queue can't be toggled while you're in a duty; leave the duty to change it
 
 ## v1.0.0.0 - 2026-06-26

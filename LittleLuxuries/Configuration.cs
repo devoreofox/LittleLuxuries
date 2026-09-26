@@ -1,6 +1,7 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using LittleLuxuries.Models.Housing;
 
 namespace LittleLuxuries;
 
@@ -28,6 +29,11 @@ public class Configuration : IPluginConfiguration
     public bool CommendQueue { get; set; } = false;
 
     public bool QuickCommands { get; set; } = false;
+
+    public bool PersonalEstateLabels { get; set; } = false;
+    public Dictionary<ulong, EstateLabelCharacter> EstateLabels { get; set; } = new();
+    public bool EstateLabelsNumbers { get; set; } = false;
+    public bool EstateLabelsLabelFirst { get; set; } = false;
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
