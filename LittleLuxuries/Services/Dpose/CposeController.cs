@@ -7,6 +7,7 @@ using ECommons.Automation;
 using ECommons.DalamudServices.Legacy;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace LittleLuxuries.Services.Dpose;
 
@@ -43,6 +44,8 @@ public class CposeController : IDisposable
         var type = GetCurrentPoseType();
         return type is not null && Poseable.Contains(type.Value);
     }
+
+    private unsafe bool IsSettled(EmoteController.PoseType type) => GetCurrentPose() == PlayerState.Instance()->CurrentPose(type);
 
     private unsafe Character* LocalCharacter()
     {
@@ -88,6 +91,22 @@ public class CposeController : IDisposable
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
         _ = DriveLoopAsync(target, type.Value, pace, _cts.Token);
+    }
+
+    public async Task<bool> WaitForPoseAsync(IReadOnlySet<EmoteController.PoseType> wanted, int timeoutMs)
+    {
+        for (var waited = 0; waited < timeoutMs; waited += 50)
+        {
+            var ready = await framework.RunOnFrameworkThread(() =>
+            {
+                var type = GetCurrentPoseType();
+                return type is not null && wanted.Contains(type.Value) && IsSettled(type.Value);
+            });
+
+            if (ready) return true;
+            await Task.Delay(50);
+        }
+        return false;
     }
 
     private async Task DriveLoopAsync(byte target, EmoteController.PoseType type, int delayMs, CancellationToken token)

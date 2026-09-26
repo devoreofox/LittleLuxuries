@@ -22,6 +22,12 @@
   - Labels are kept per character, and each character's estates are picked up the first time you open Teleport on them
   - "Forget" removes an estate you've moved out of, along with its label
 
+### Improved
+- Deterministic Posing:
+  - `/sit`, `/groundsit` and `/doze` now accept a pose index too, e.g. `/groundsit 3` sits you straight into your third ground pose
+  - Already in that pose type? The index just switches your pose instead of standing you back up
+  - Plain `/sit`, `/groundsit` and `/doze` work exactly as before
+
 ### Fixed
 - Stopped Little Luxuries from insisting on holding hands with Silkstring if both plugins were installed
 

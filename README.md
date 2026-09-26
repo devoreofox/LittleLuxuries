@@ -8,7 +8,7 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 - **Character Select Tweaks** *(coming soon)* - Customise elements on the character select screen.
 - **Commend Queue** - Queue your commendation for a player mid-duty and have it awarded automatically when the duty ends.
 - **Contact Copy** - Adds a "Copy Name" option to the Contact List right-click menu, copying a player's name (optionally with home world) to your clipboard.
-- **Deterministic Posing** - Extends `/cpose` to accept an index, jumping directly to a specific pose.
+- **Deterministic Posing** - Extends `/cpose`, `/sit`, `/groundsit` and `/doze` to accept an index, jumping directly to a specific pose.
 - **Estate Key** - Lock or unlock your estate's guest access and toggle teleport permission from chat, without opening the housing menus.
 - **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
 - **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.

@@ -58,7 +58,6 @@ public sealed class Plugin : IDalamudPlugin
         var cpose = new CposeController(ClientState, Framework);
 
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
-        var deterministicPosing = new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop);
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
 
@@ -67,7 +66,7 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(housingArrowHider);
         Tweaks.Add(new PersonalEstateLabels(DataManager, ClientState, PlayerState, Configuration, AddonLifecycle));
         Tweaks.Add(new PartyFinderCleanup());
-        Tweaks.Add(deterministicPosing);
+        Tweaks.Add(new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop, Framework));
         Tweaks.Add(new CharacterSelectTweaks());
         Tweaks.Add(new ContactCopy(ContextMenu, Configuration));
         Tweaks.Add(new EstateKey(estateAccess, Configuration, CommandManager, ChatGui));

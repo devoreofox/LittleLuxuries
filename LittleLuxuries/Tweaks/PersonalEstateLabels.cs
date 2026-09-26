@@ -46,68 +46,6 @@ public class PersonalEstateLabels : Tweak, IDisposable
         addonLifecycle.UnregisterListener(OnTeleportPreSetup);
     }
 
-    public override void DrawConfig()
-    {
-        var enabled = configuration.PersonalEstateLabels;
-        var labelFirst = configuration.EstateLabelsLabelFirst;
-        var labelNumbers = configuration.EstateLabelsNumbers;
-
-        if (ImGui.Checkbox("Show custom estate labels in the Teleport menu", ref enabled))
-        {
-            configuration.PersonalEstateLabels = enabled;
-            configuration.Save();
-
-            if (enabled && clientState.IsLoggedIn) OnLogin();
-        }
-
-        if (ImGui.Checkbox("Show label before location", ref labelFirst))
-        {
-            configuration.EstateLabelsLabelFirst = labelFirst;
-            configuration.Save();
-        }
-        ImGui.SameLine();
-        if (ImGui.Checkbox("Show ward and plot numbers", ref labelNumbers))
-        {
-            configuration.EstateLabelsNumbers = labelNumbers;
-            configuration.Save();
-            RefreshEstates();
-        }
-
-        foreach (var (cid, character) in configuration.EstateLabels)
-        {
-            if (!ImGui.CollapsingHeader($"{character.Name}##{cid}")) continue;
-            if (character.Estates.Count == 0) ImGui.TextDisabled("Open the Teleport menu once to load your estates.");
-
-            var estates = character.Estates.OrderBy(e => e.Value.Order).ToList();
-            for (var j = 0; j < estates.Count; j++)
-            {
-                var (houseId, estate) = estates[j];
-
-                ImGui.BeginDisabled(j == 0);
-                if (ImGui.ArrowButton($"##up{houseId}", ImGuiDir.Up)) Move(estates, j, -1);
-                ImGui.EndDisabled();
-                ImGui.SameLine();
-                ImGui.BeginDisabled(j == estates.Count - 1);
-                if (ImGui.ArrowButton($"##down{houseId}", ImGuiDir.Down)) Move(estates, j, +1);
-                ImGui.EndDisabled();
-                ImGui.SameLine();
-
-                var label = estate.Label;
-                ImGui.SetNextItemWidth(200);
-                if (ImGui.InputText($"{estate.Location}##{houseId}", ref label, 64)) estate.Label = label;
-                if (ImGui.IsItemDeactivatedAfterEdit()) configuration.Save();
-
-                ImGui.SameLine();
-                if (ImGui.SmallButton($"Forget##forget{houseId}"))
-                {
-                    character.Estates.Remove(houseId);
-                    configuration.Save();
-                }
-                ImGuiUtil.Tooltip("Remove this estate and its label. Use it for places you've moved out of.");
-            }
-        }
-    }
-
     private unsafe void RefreshEstates()
     {
         if (!configuration.EstateLabels.TryGetValue(playerState.ContentId, out var character)) return;
@@ -208,6 +146,68 @@ public class PersonalEstateLabels : Tweak, IDisposable
         for (var r = 0; r < rows.Count; r++)
         {
             for (var k = 0; k < 5; k++) values[rows[r].Start + 3 + k] = payloads[r * 5 + k];
+        }
+    }
+
+    public override void DrawConfig()
+    {
+        var enabled = configuration.PersonalEstateLabels;
+        var labelFirst = configuration.EstateLabelsLabelFirst;
+        var labelNumbers = configuration.EstateLabelsNumbers;
+
+        if (ImGui.Checkbox("Show custom estate labels in the Teleport menu", ref enabled))
+        {
+            configuration.PersonalEstateLabels = enabled;
+            configuration.Save();
+
+            if (enabled && clientState.IsLoggedIn) OnLogin();
+        }
+
+        if (ImGui.Checkbox("Show label before location", ref labelFirst))
+        {
+            configuration.EstateLabelsLabelFirst = labelFirst;
+            configuration.Save();
+        }
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Show ward and plot numbers", ref labelNumbers))
+        {
+            configuration.EstateLabelsNumbers = labelNumbers;
+            configuration.Save();
+            RefreshEstates();
+        }
+
+        foreach (var (cid, character) in configuration.EstateLabels)
+        {
+            if (!ImGui.CollapsingHeader($"{character.Name}##{cid}")) continue;
+            if (character.Estates.Count == 0) ImGui.TextDisabled("Open the Teleport menu once to load your estates.");
+
+            var estates = character.Estates.OrderBy(e => e.Value.Order).ToList();
+            for (var j = 0; j < estates.Count; j++)
+            {
+                var (houseId, estate) = estates[j];
+
+                ImGui.BeginDisabled(j == 0);
+                if (ImGui.ArrowButton($"##up{houseId}", ImGuiDir.Up)) Move(estates, j, -1);
+                ImGui.EndDisabled();
+                ImGui.SameLine();
+                ImGui.BeginDisabled(j == estates.Count - 1);
+                if (ImGui.ArrowButton($"##down{houseId}", ImGuiDir.Down)) Move(estates, j, +1);
+                ImGui.EndDisabled();
+                ImGui.SameLine();
+
+                var label = estate.Label;
+                ImGui.SetNextItemWidth(200);
+                if (ImGui.InputText($"{estate.Location}##{houseId}", ref label, 64)) estate.Label = label;
+                if (ImGui.IsItemDeactivatedAfterEdit()) configuration.Save();
+
+                ImGui.SameLine();
+                if (ImGui.SmallButton($"Forget##forget{houseId}"))
+                {
+                    character.Estates.Remove(houseId);
+                    configuration.Save();
+                }
+                ImGuiUtil.Tooltip("Remove this estate and its label. Use it for places you've moved out of.");
+            }
         }
     }
 }

@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Hooking;
 using Dalamud.Plugin.Services;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.Shell;
@@ -14,20 +17,30 @@ namespace LittleLuxuries.Tweaks;
 public class DeterministicPosing : Tweak, IDisposable
 {
     public override string Name => "Deterministic Posing";
-    public override string Description => "Extends the /cpose command to accept an index, allowing you to jump directly to a specific pose rather than cycling through them one at a time. For example, /cpose 3 immediately sets your third standing pose.";
+    public override string Description => "Extends the /cpose command to accept an index, allowing you to jump directly to a specific pose rather than cycling through them one at a time. For example, /cpose 3 immediately sets your third standing pose. Also works with /sit, /groundsit and /doze, so /groundsit 3 sits you straight into your third ground pose.";
     public override bool IsImplemented => true;
 
     private readonly CposeController controller;
     private readonly Configuration configuration;
     private readonly IChatGui chatGui;
+    private readonly IFramework framework;
     private Hook<ShellCommandModule.Delegates.ExecuteCommandInner> processChatInputHook;
 
+    private static readonly Dictionary<string, HashSet<EmoteController.PoseType>> PoseEmotes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["/sit"] = [EmoteController.PoseType.Sit, EmoteController.PoseType.GroundSit],
+        ["/groundsit"] = [EmoteController.PoseType.GroundSit],
+        ["/doze"] = [EmoteController.PoseType.Doze],
+    };
+    private const int EmoteSettleMs = 750;
+
     public unsafe DeterministicPosing(
-        CposeController cpose, Configuration configuration, IChatGui chat, IGameInteropProvider interop)
+        CposeController cpose, Configuration configuration, IChatGui chat, IGameInteropProvider interop, IFramework framework)
     {
         this.controller = cpose;
         this.configuration = configuration;
         this.chatGui = chat;
+        this.framework = framework;
 
         processChatInputHook = interop.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
             ShellCommandModule.Addresses.ExecuteCommandInner.Value, Detour);
@@ -57,6 +70,12 @@ public class DeterministicPosing : Tweak, IDisposable
                     else HandleCpose(parts);
                     return;
                 }
+
+                if (parts.Length > 1 && PoseEmotes.TryGetValue(parts[0], out var wanted) && byte.TryParse(parts[^1], out var input))
+                {
+                    HandlePoseEmote(shellCommandModule, uiModule, parts, wanted, input);
+                    return;
+                }
             }
         }
         catch (Exception ex)
@@ -74,6 +93,7 @@ public class DeterministicPosing : Tweak, IDisposable
             case "help":
                 chatGui.Print("/cpose <index> - jump to a pose");
                 chatGui.Print("/cpose list - show poses");
+                chatGui.Print("/sit, /groundsit, /doze <index> - sit or doze straight into a pose");
                 chatGui.Print("/cpose - cycle");
                 return;
             case "list":
@@ -87,23 +107,27 @@ public class DeterministicPosing : Tweak, IDisposable
             return;
         }
 
-        var type = controller.GetCurrentPoseType();
-        if (type is null || !controller.IsPoseable())
-        {
-            chatGui.Print("/cpose <index> only works while standing, sitting, sitting on the ground, or dozing. ");
-            return;
-        }
+        TryDrive(input);
+    }
 
-        var max = controller.GetMaxPose(type.Value);
-        var index = configuration.CposeOneBasedIndex ? input - 1 : input;
-        if (index < 0 || index > max)
+    private unsafe void HandlePoseEmote(
+        ShellCommandModule* module, UIModule* uiModule, string[] parts, HashSet<EmoteController.PoseType> wanted, byte input)
+    {
+        var current = controller.GetCurrentPoseType();
+        if (current is null || !wanted.Contains(current.Value))
         {
-            var low = configuration.CposeOneBasedIndex ? 1 : 0;
-            var high = configuration.CposeOneBasedIndex ? max + 1 : max;
-            chatGui.Print($"Pose {input} is out of range ({low}-{high} for {type}).");
-            return;
+            var bare = Utf8String.FromString(string.Join(' ', parts[..^1]));
+            processChatInputHook.Original(module, bare, uiModule);
+            bare->Dtor(true);
         }
-        controller.DriveTo((byte)index, configuration.CposeDelayMs);
+        _ = DriveAfterEmoteAsync(wanted, input);
+    }
+
+    private async Task DriveAfterEmoteAsync(HashSet<EmoteController.PoseType> wanted, byte input)
+    {
+        if (!await controller.WaitForPoseAsync(wanted, 3000)) return;
+        await Task.Delay(EmoteSettleMs);
+        await framework.RunOnFrameworkThread(() => TryDrive(input));
     }
 
     private void PrintList()
@@ -122,6 +146,27 @@ public class DeterministicPosing : Tweak, IDisposable
         else
             chatGui.Print($"{type}: 0-{max} (current: {current})");
     }
+
+    private void TryDrive(byte input)
+    {
+        var type = controller.GetCurrentPoseType();
+        if (type is null || !controller.IsPoseable())
+        {
+            chatGui.Print("/cpose <index> only works while standing, sitting, sitting on the ground, or dozing. ");
+            return;
+        }
+
+        var max = controller.GetMaxPose(type.Value);
+        var index = configuration.CposeOneBasedIndex ? input - 1 : input;
+        if (index < 0 || index > max)
+        {
+            var low = configuration.CposeOneBasedIndex ? 1 : 0;
+            var high = configuration.CposeOneBasedIndex ? max + 1 : max;
+            chatGui.Print($"Pose {input} is out of range ({low}-{high} for {type}).");
+            return;
+        }
+        controller.DriveTo((byte)index, configuration.CposeDelayMs);
+    }
     public override void DrawConfig()
     {
         var enabled = configuration.DeterministicPosing;
@@ -130,7 +175,7 @@ public class DeterministicPosing : Tweak, IDisposable
             configuration.DeterministicPosing = enabled;
             configuration.Save();
         }
-        ImGuiUtil.Tooltip("Enables /cpose <index> to jump directly to a pose.\nWhen off, /cpose behaves exactly like the game's built-in command.");
+        ImGuiUtil.Tooltip("Enables /cpose <index> (and /sit, /groundsit, /doze <index>) to jump directly to a pose.\nWhen off, these behave exactly like the game's built-in commands.");
 
         var delay = configuration.CposeDelayMs;
         if (ImGui.SliderInt("Cycle delay (ms)", ref delay, 150, 1000))
@@ -152,7 +197,8 @@ public class DeterministicPosing : Tweak, IDisposable
         ImGui.TextWrapped("/cpose <index> - jump straight to a specific pose.");
         ImGui.TextWrapped("/cpose list - show the available poses.");
         ImGui.TextWrapped("/cpose help - show usage.");
-        ImGui.TextWrapped("Plain /cpose still cycles normally.");
+        ImGui.TextWrapped("/sit, /groundsit, /doze <index> - sit or doze straight into a specific pose.");
+        ImGui.TextWrapped("Plain /cpose, /sit, /groundsit and /doze still work normally.");
 
         ImGui.Spacing();
         ImGui.Separator();
