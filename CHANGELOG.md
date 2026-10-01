@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0.0 - 2026-10-01
+
+### Improved
+- Personal Estate Labels:
+  - Bookmarks: save anyone's house or apartment, on any world, with your own label; they're listed at the end of Residential Areas in the Teleport menu
+  - Click a bookmark to travel there: with Lifestream installed it takes you all the way to the plot; without it, you teleport to that district's city, or to your choice of Limsa Lominsa, Ul'dah or Gridania when the bookmark is on another world so you can world visit
+  - Bookmark rows show the world, district, ward and plot (or apartment room), plus the gil cost of the first teleport
+  - Reorder bookmarks, and see at a glance whether Lifestream is connected
+  - Tidier settings: estates and bookmarks are laid out in tables, and worlds are picked from a list grouped by region and data center
+  - Bookmarks show up even without an estate of your own, and while you're visiting another world
+  - While visiting another world, your own estates stay in the Teleport menu too; clicking one takes you home to it, the same way a bookmark does
+
 ## v1.1.0.0 - 2026-09-25
 
 ### New Tweaks
@@ -12,7 +24,7 @@
   - `/targetnearest` - target the nearest interactable object (housing door, entrance, aetheryte, and the like)
   - `/acceptduty` - press Commence on the Duty Ready popup
   - `/enterhouse` - interact with the nearest house or apartment entrance and confirm entry for you; add a room number (`/enterhouse 12`) to enter a specific apartment
-  - `/itemaction <item name>` - use an inventory item by its name (potions, tinctures, glamour prisms, and the like)
+  - `/itemaction <item name>` - use an inventory item by its name (potions, food, prisms etc)
 - Personal Estate Labels:
   - Give your personal estate, shared estates and apartment custom names in the Teleport menu's Residential Areas
   - Labelled rows show the district alongside your label, e.g. "The Lavender Beds - Home"

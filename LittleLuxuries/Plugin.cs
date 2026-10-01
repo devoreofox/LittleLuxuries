@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
@@ -10,6 +11,7 @@ using ECommons;
 using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
+using LittleLuxuries.UI.EstateLabels;
 using LittleLuxuries.Windows;
 
 namespace LittleLuxuries;
@@ -63,8 +65,17 @@ public sealed class Plugin : IDalamudPlugin
 
         var estateAccess = new EstateAccessController(ClientState, Condition, AddonLifecycle, GameInterop);
 
+        var estateAddresses = new EstateAddresses(DataManager, Configuration);
+        var estateRegistry = new EstateRegistry(ClientState, PlayerState, Configuration, estateAddresses);
+        var bookmarkTravel = new BookmarkTravel(PlayerState, ChatGui, Framework, Configuration, estateAddresses);
+        var teleportList = new TeleportListEditor(AddonLifecycle, DataManager, PlayerState, Configuration, estateRegistry, estateAddresses, bookmarkTravel);
+
         Tweaks.Add(housingArrowHider);
-        Tweaks.Add(new PersonalEstateLabels(DataManager, ClientState, PlayerState, Configuration, AddonLifecycle));
+        Tweaks.Add(new PersonalEstateLabels(Configuration, estateRegistry, teleportList,
+                                            new TravelSettings(Configuration, DataManager, bookmarkTravel),
+                                            new EstateTable(Configuration),
+                                            new BookmarkTable(Configuration, estateAddresses),
+                                            new BookmarkForm(Configuration, estateAddresses, new WorldPicker(PlayerState))));
         Tweaks.Add(new PartyFinderCleanup());
         Tweaks.Add(new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop, Framework));
         Tweaks.Add(new CharacterSelectTweaks());
@@ -76,15 +87,11 @@ public sealed class Plugin : IDalamudPlugin
 
         if (!Configuration.NewTweaksInitialized)
         {
-            var newThisRelease = new HashSet<string> { "Commend Queue", "Quick Commands" }; //Remove on next release (please don't forget Oreo, god x-x) Yes this is for you, whoever is reading these. >:(
-
-            foreach (var tweak in Tweaks)
-            {
-                if (!newThisRelease.Contains(tweak.Name)) Configuration.NewTweaks.Add(tweak.Name);
-            }
+            foreach (var tweak in Tweaks) Configuration.NewTweaks.Add(tweak.Name);
             Configuration.NewTweaksInitialized = true;
-            Configuration.Save();
         }
+        Configuration.NewTweaks.RemoveWhere(name => Tweaks.Any(t => t.Name == name && !t.IsImplemented));
+        Configuration.Save();
 
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(_arrowWhitelistWindow);

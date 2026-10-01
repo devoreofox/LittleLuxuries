@@ -13,4 +13,20 @@ public static class ImGuiUtil
         ImGui.PopTextWrapPos();
         ImGui.EndTooltip();
     }
+
+    public static void Section(string title)
+    {
+        ImGui.Spacing();
+        ImGui.TextDisabled(title);
+        ImGui.Separator();
+    }
+
+    public static void Field(string label)
+    {
+        ImGui.TableNextColumn();
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextUnformatted(label);
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(-1);
+    }
 }

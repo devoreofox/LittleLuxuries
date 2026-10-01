@@ -34,6 +34,7 @@ public class Configuration : IPluginConfiguration
     public Dictionary<ulong, EstateLabelCharacter> EstateLabels { get; set; } = new();
     public bool EstateLabelsNumbers { get; set; } = false;
     public bool EstateLabelsLabelFirst { get; set; } = false;
+    public int EstateBookmarkTravelCity { get; set; } = 8;
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
