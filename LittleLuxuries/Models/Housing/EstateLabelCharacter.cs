@@ -8,4 +8,5 @@ public class EstateLabelCharacter
 {
     public string Name { get; set; } = string.Empty;
     public Dictionary<ulong, EstateLabel> Estates { get; set; } = new();
+    public List<EstateBookmark> Bookmarks { get; set; } = new();
 }
