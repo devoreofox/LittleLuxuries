@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
@@ -9,8 +10,10 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
-using ECommons.ExcelServices;
+using Dalamud.Plugin.Ipc;
+using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Services;
+using ECommons.ExcelServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -27,6 +30,10 @@ public class PersonalEstateLabels : Tweak, IDisposable
     private readonly IPlayerState playerState;
     private readonly Configuration configuration;
     private readonly IAddonLifecycle addonLifecycle;
+    private readonly IChatGui chatGui;
+    private readonly IFramework framework;
+    private readonly ICallGateSubscriber<(string, int, int, int, int, int, int, bool, bool, string), object> lifestreamGoTo;
+    private readonly ICallGateSubscriber<bool> lifestreamBusy;
 
     private static readonly Dictionary<int, ushort> CityDistricts = new() { [8] = 339, [2] = 340, [9] = 341, [111] = 641, [70] = 979 };
 
@@ -39,13 +46,18 @@ public class PersonalEstateLabels : Tweak, IDisposable
 
     private readonly Dictionary<uint, EstateBookmark> bookmarkBlocks = new();
 
-    public PersonalEstateLabels(IDataManager dataManger,  IClientState clientState,  IPlayerState playerState,   Configuration configuration,  IAddonLifecycle addonLifecycle)
+    public PersonalEstateLabels(IDataManager dataManger,  IClientState clientState,  IPlayerState playerState,   Configuration configuration,  IAddonLifecycle addonLifecycle, IChatGui chatGui, IFramework framework)
     {
         this.dataManager = dataManger;
         this.clientState = clientState;
         this.playerState = playerState;
         this.configuration = configuration;
         this.addonLifecycle = addonLifecycle;
+        this.chatGui = chatGui;
+        this.framework = framework;
+
+        lifestreamGoTo = Plugin.PluginInterface.GetIpcSubscriber<(string, int, int, int, int, int, int, bool, bool, string), object>("Lifestream.GoToHousingAddress");
+        lifestreamBusy = Plugin.PluginInterface.GetIpcSubscriber<bool>("Lifestream.IsBusy");
 
         clientState.Login +=  OnLogin;
 
@@ -55,7 +67,8 @@ public class PersonalEstateLabels : Tweak, IDisposable
         addonLifecycle.RegisterListener(AddonEvent.PreReceiveEvent, "Teleport", OnTeleportReceiveEvent);
     }
     public override string Name => "Personal Estate Labels";
-    public override string Description => "Give your personal estate, shared estates and apartment custom names in the Teleport menu, optionally with ward and plot numbers, and reorder them so your favourite place sits at the top.";
+    public override string Description => "Give your personal estate, shared estates and apartment custom names in the Teleport menu, optionally with ward and plot numbers, and reorder them so your favourite place sits at the top. " +
+                                          "Bookmark friends' houses on any world and click them in the Teleport menu to travel there: all the way to the plot with Lifestream, or as close as a teleport gets you without it.";
     public override bool IsImplemented => true;
 
     public void Dispose()
@@ -207,7 +220,13 @@ public class PersonalEstateLabels : Tweak, IDisposable
             foreach (var b in character.Bookmarks)
             {
                 var location = FormatBookmark(b);
-                if (!InsertRow(values, setup.AtkValueCount, insertAt, rowKind, labelFirst ? b.Label : location, labelFirst ? location : b.Label)) break;
+
+                var sameWorld = playerState.CurrentWorld.RowId == (uint)b.World;
+                var cost = CostTo(teleports, (uint)(sameWorld ? b.City : configuration.EstateBookmarkTravelCity));
+                var costText = cost is { } c ? c.ToString("N0", CultureInfo.InvariantCulture) + "\uE049" : "";
+
+                if (!InsertRow(values, setup.AtkValueCount, insertAt, rowKind, labelFirst ? b.Label : location, labelFirst ? location : b.Label,
+                               (int)(cost ?? 0), costText)) break;
                 bookmarkBlocks[(uint)((insertAt - 2) / 8)] = b;
                 insertAt += 8;
             }
@@ -225,11 +244,59 @@ public class PersonalEstateLabels : Tweak, IDisposable
         var block = data->ListItemData.ListItem->UIntValues.AsSpan()[2];
         if (!bookmarkBlocks.TryGetValue(block, out var bookmark)) return;
 
-        Serilog.Log.Information($"[EstateLabels] bookmark clicked: {bookmark.Label} -> {FormatBookmark(bookmark)}");
-        // step 3: Lifestream or teleport fallback
+        framework.RunOnTick(() => Travel(bookmark));
     }
 
-    private static unsafe bool InsertRow(AtkValue* values, uint valueCount, int insertAt, uint rowKind, string col1, string col2)
+    private bool LifestreamAvailable()
+    {
+        try
+        {
+            lifestreamBusy.InvokeFunc();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private unsafe void Travel(EstateBookmark b)
+    {
+        try
+        {
+            if (lifestreamBusy.InvokeFunc())
+            {
+                chatGui.PrintError("Lifestream is busy with another trip.");
+                return;
+            }
+            lifestreamGoTo.InvokeAction((b.Label, b.World, b.City, b.Ward, b.IsApartment ? 1 : 0, b.Plot, b.Apartment, b.ApartmentSubdivision, false, ""));
+            return;
+        }
+        catch (IpcNotReadyError)
+        {
+        }
+
+        var sameWorld = playerState.CurrentWorld.RowId == (uint)b.World;
+        var aetheryte = (uint)(sameWorld ? b.City : configuration.EstateBookmarkTravelCity);
+        if (!Telepo.Instance()->Teleport(aetheryte, 0))
+        {
+            chatGui.PrintError($"Couldn't teleport toward {b.Label}.");
+            return;
+        }
+
+        chatGui.Print(sameWorld
+            ? $"Teleporting toward {b.Label} ({FormatBookmark(b)}). Take the aethernet from there."
+            : $"{b.Label} is on another world ({FormatBookmark(b)}). Teleporting so you can world visit.");
+    }
+
+    private static uint? CostTo(ReadOnlySpan<TeleportInfo> teleports, uint aetheryte)
+    {
+        foreach (var t in teleports)
+            if (t.AetheryteId == aetheryte && t.SubIndex == 0) return t.GilCost;
+        return null;
+    }
+
+    private static unsafe bool InsertRow(AtkValue* values, uint valueCount, int insertAt, uint rowKind, string col1, string col2, int cost, string costText)
     {
         var count = (int)values[2].UInt;
         var end = 2 + count * 8;
@@ -249,7 +316,8 @@ public class PersonalEstateLabels : Tweak, IDisposable
         values[insertAt + 4].SetManagedString(col1);
         values[insertAt + 5].SetManagedString(col2);
         values[insertAt + 6].Type = AtkValueType.Int;
-        values[insertAt + 7].SetManagedString("");
+        values[insertAt + 6].Int = cost;
+        values[insertAt + 7].SetManagedString(costText);
 
         values[2].UInt = (uint)(count + 1);
         return true;
@@ -494,6 +562,37 @@ public class PersonalEstateLabels : Tweak, IDisposable
         }
     }
 
+    private static readonly Vector4 Connected = new(0.45f, 0.85f, 0.45f, 1f);
+    private static readonly Vector4 Disconnected = new(0.9f, 0.45f, 0.45f, 1f);
+
+    private void DrawTravelSettings()
+    {
+        Section("Bookmark travel");
+
+        var lifestream = LifestreamAvailable();
+        ImGui.TextUnformatted("Lifestream");
+        ImGui.SameLine();
+        ImGui.PushFont(UiBuilder.IconFont);
+        ImGui.TextColored(lifestream ? Connected : Disconnected, (lifestream ? FontAwesomeIcon.Check : FontAwesomeIcon.Times).ToIconString());
+        ImGui.PopFont();
+        ImGuiUtil.Tooltip(lifestream
+            ? "Clicking a bookmark lets Lifestream take you all the way to the plot."
+            : "Lifestream isn't installed or enabled. Clicking a bookmark teleports you as close as it can instead.");
+
+        int[] travelCities = { 8, 9, 2 };
+        var aetherytes = dataManager.GetExcelSheet<Aetheryte>();
+        var travelNames = travelCities.Select(a => aetherytes.GetRow((uint)a).PlaceName.Value.Name.ExtractText()).ToArray();
+        var travelIndex = Array.IndexOf(travelCities, configuration.EstateBookmarkTravelCity);
+
+        ImGui.SetNextItemWidth(220 * ImGuiHelpers.GlobalScale);
+        if (ImGui.Combo("World visit from", ref travelIndex, travelNames))
+        {
+            configuration.EstateBookmarkTravelCity = travelCities[travelIndex];
+            configuration.Save();
+        }
+        ImGuiUtil.Tooltip("Without Lifestream, clicking a bookmark on another world teleports you here so you can world visit.");
+    }
+
     public override void DrawConfig()
     {
         var enabled = configuration.PersonalEstateLabels;
@@ -520,6 +619,8 @@ public class PersonalEstateLabels : Tweak, IDisposable
             configuration.Save();
             RefreshEstates();
         }
+
+        DrawTravelSettings();
 
         foreach (var (cid, character) in configuration.EstateLabels)
         {

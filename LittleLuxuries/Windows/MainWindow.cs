@@ -50,7 +50,7 @@ public class MainWindow : Window, IDisposable
 
         foreach (var tweak in filtered)
         {
-            var isNew = !plugin.Configuration.NewTweaks.Contains(tweak.Name);
+            var isNew = tweak.IsImplemented && !plugin.Configuration.NewTweaks.Contains(tweak.Name);
 
             if (ImGui.Selectable(tweak.Name, _selectedTweak == tweak))
             {

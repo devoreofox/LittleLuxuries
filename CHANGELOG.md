@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.2.0.0 - 2026-10-01
+
+### Improved
+- Personal Estate Labels:
+  - Bookmarks: save anyone's house or apartment, on any world, with your own label; they're listed at the end of Residential Areas in the Teleport menu
+  - Click a bookmark to travel there: with Lifestream installed it takes you all the way to the plot; without it, you teleport to that district's city, or to your choice of Limsa Lominsa, Ul'dah or Gridania when the bookmark is on another world so you can world visit
+  - Bookmark rows show the world, district, ward and plot (or apartment room), plus the gil cost of the first teleport
+  - Reorder bookmarks, and see at a glance whether Lifestream is connected
+  - Tidier settings: estates and bookmarks are laid out in tables, and worlds are picked from a list grouped by region and data center
+
+### Notes
+- Bookmarks are listed under your own estates, so a character needs a personal estate, shared estate or apartment for them to appear in the Teleport menu
+
 ## v1.1.0.0 - 2026-09-25
 
 ### New Tweaks
