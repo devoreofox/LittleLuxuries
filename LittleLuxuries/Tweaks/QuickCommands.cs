@@ -48,7 +48,7 @@ public sealed unsafe class QuickCommands : Tweak, IDisposable
         commands.AddHandler("/targetnearest", new CommandInfo(OnTargetNearest) { HelpMessage = "Target the nearest interactable object (housing door, entrance, etc.)." });
         commands.AddHandler("/acceptduty",    new CommandInfo(OnAcceptDuty)    { HelpMessage = "Press Commence on the Duty Ready popup." });
         commands.AddHandler("/enterhouse",    new CommandInfo(OnEnterHouse)    { HelpMessage = "Enter the house or apartment you're standing in front of." });
-        commands.AddHandler("/itemaction",    new CommandInfo(OnItemAction)    { HelpMessage = "Use an inventory item by name, e.g. /itemaction Grade 8 Tincture of Strength." });
+        commands.AddHandler("/itemaction",    new CommandInfo(OnItemAction)    { HelpMessage = "Use an inventory item by its name (potions, food, prisms etc)." });
 
         framework.Update += OnFrameworkUpdate;
     }
@@ -197,6 +197,6 @@ public sealed unsafe class QuickCommands : Tweak, IDisposable
         ImGui.TextWrapped("/targetnearest - target the closest interactable object (housing door, entrance, aetheryte, etc.).");
         ImGui.TextWrapped("/acceptduty - press Commence on the Duty Ready popup.");
         ImGui.TextWrapped("/enterhouse - interact with the nearest house/apartment entrance and confirm entry automatically.");
-        ImGui.TextWrapped("/itemaction <item name> - use an inventory item by its name (potions, tinctures, glamour prisms, etc.).");
+        ImGui.TextWrapped("/itemaction <item name> - use an inventory item by its name (potions, food, prisms etc)");
     }
 }

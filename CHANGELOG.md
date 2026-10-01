@@ -24,7 +24,7 @@
   - `/targetnearest` - target the nearest interactable object (housing door, entrance, aetheryte, and the like)
   - `/acceptduty` - press Commence on the Duty Ready popup
   - `/enterhouse` - interact with the nearest house or apartment entrance and confirm entry for you; add a room number (`/enterhouse 12`) to enter a specific apartment
-  - `/itemaction <item name>` - use an inventory item by its name (potions, tinctures, glamour prisms, and the like)
+  - `/itemaction <item name>` - use an inventory item by its name (potions, food, prisms etc)
 - Personal Estate Labels:
   - Give your personal estate, shared estates and apartment custom names in the Teleport menu's Residential Areas
   - Labelled rows show the district alongside your label, e.g. "The Lavender Beds - Home"
