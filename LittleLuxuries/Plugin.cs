@@ -11,6 +11,7 @@ using ECommons;
 using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
+using LittleLuxuries.UI.EstateLabels;
 using LittleLuxuries.Windows;
 
 namespace LittleLuxuries;
@@ -64,8 +65,17 @@ public sealed class Plugin : IDalamudPlugin
 
         var estateAccess = new EstateAccessController(ClientState, Condition, AddonLifecycle, GameInterop);
 
+        var estateAddresses = new EstateAddresses(DataManager, Configuration);
+        var estateRegistry = new EstateRegistry(ClientState, PlayerState, Configuration, estateAddresses);
+        var bookmarkTravel = new BookmarkTravel(PlayerState, ChatGui, Framework, Configuration, estateAddresses);
+        var teleportList = new TeleportListEditor(AddonLifecycle, DataManager, PlayerState, Configuration, estateRegistry, estateAddresses, bookmarkTravel);
+
         Tweaks.Add(housingArrowHider);
-        Tweaks.Add(new PersonalEstateLabels(DataManager, ClientState, PlayerState, Configuration, AddonLifecycle, ChatGui, Framework));
+        Tweaks.Add(new PersonalEstateLabels(Configuration, estateRegistry, teleportList,
+                                            new TravelSettings(Configuration, DataManager, bookmarkTravel),
+                                            new EstateTable(Configuration),
+                                            new BookmarkTable(Configuration, estateAddresses),
+                                            new BookmarkForm(Configuration, estateAddresses, new WorldPicker(PlayerState))));
         Tweaks.Add(new PartyFinderCleanup());
         Tweaks.Add(new DeterministicPosing(cpose, Configuration, ChatGui, GameInterop, Framework));
         Tweaks.Add(new CharacterSelectTweaks());

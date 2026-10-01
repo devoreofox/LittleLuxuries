@@ -9,9 +9,8 @@
   - Bookmark rows show the world, district, ward and plot (or apartment room), plus the gil cost of the first teleport
   - Reorder bookmarks, and see at a glance whether Lifestream is connected
   - Tidier settings: estates and bookmarks are laid out in tables, and worlds are picked from a list grouped by region and data center
-
-### Notes
-- Bookmarks are listed under your own estates, so a character needs a personal estate, shared estate or apartment for them to appear in the Teleport menu
+  - Bookmarks show up even without an estate of your own, and while you're visiting another world
+  - While visiting another world, your own estates stay in the Teleport menu too; clicking one takes you home to it, the same way a bookmark does
 
 ## v1.1.0.0 - 2026-09-25
 
