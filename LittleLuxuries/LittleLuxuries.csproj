@@ -20,5 +20,6 @@
 
     <ItemGroup>
     <PackageReference Include="ECommons" Version="3.2.1.12" />
+    <PackageReference Include="KamiToolKit" Version="2.2.64" />
     </ItemGroup>
 </Project>

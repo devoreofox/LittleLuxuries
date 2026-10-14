@@ -8,6 +8,7 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
+using KamiToolKit;
 using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
@@ -52,6 +53,7 @@ public sealed class Plugin : IDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         ECommonsMain.Init(PluginInterface, this);
+        var ktkReady = KamiToolKitLibrary.InitializeAsync(PluginInterface, "Little Luxuries");
 
         MainWindow = new MainWindow(this, ToggleChangelogUi);
         ChangelogWindow = new ChangelogWindow();
