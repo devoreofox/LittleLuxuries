@@ -1,7 +1,9 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using LittleLuxuries.Models.Housing;
+using LittleLuxuries.Models.PlayerMapIcons;
 
 namespace LittleLuxuries;
 
@@ -35,6 +37,18 @@ public class Configuration : IPluginConfiguration
     public bool EstateLabelsNumbers { get; set; } = false;
     public bool EstateLabelsLabelFirst { get; set; } = false;
     public int EstateBookmarkTravelCity { get; set; } = 8;
+
+    public bool PlayerMapIcons { get; set; } = false;
+    public bool PlayerMapIconsMinimap { get; set; } = false;
+    public bool PlayerMapIconsAll { get; set; } = false;
+    public bool PlayerMapIconsFriends { get; set; } = true;
+    public bool PlayerMapIconsFreeCompany { get; set; } = false;
+    public bool PlayerMapIconsWhitelisted { get; set; } = true;
+    public float PlayerMapIconsDistance { get; set; } = 150.0f;
+    public HashSet<string> PlayerMapIconsWhitelist { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> PlayerMapIconsBlacklist { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public MarkerColors PlayerMapIconsColors { get; set; } = new();
+    public Dictionary<string, Vector3> PlayerMapIconsPlayerColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();
