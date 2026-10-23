@@ -39,10 +39,10 @@ public sealed unsafe class PlayerMapMarker : MapMarkerNode
         var chara = CharacterManager.Instance()->BattleCharas[PlayerIndex].Value;
         if (chara is null) return;
 
-        var color = Tweak.MarkerColor(chara, local);
-        if (color is null) return;
+        var style = Tweak.Marker(chara, local);
+        if (style is null) return;
 
-        _base?.MultiplyColor = color.Value;
+        _base?.MultiplyColor = style.Value.Color;
         Position = new Vector2(chara->Position.X, chara->Position.Z);
         TextTooltip = chara->NameString;
         MapId = AgentMap.Instance()->CurrentMapId;

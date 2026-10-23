@@ -67,7 +67,7 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
         _minimap = new MinimapMarkers(this, textureProvider, clientState, dataManager, configuration);
     }
 
-    public Vector3? MarkerColor(BattleChara* chara, GameObject* local)
+    public (Vector3 Color, bool Minimap)? Marker(BattleChara* chara, GameObject* local)
     {
         if (!configuration.PlayerMapIcons) return null;
         if ((GameObject*)chara == local) return null;
@@ -78,10 +78,10 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
 
         var key = $"{chara->NameString}@{ExcelWorldHelper.GetName(chara->HomeWorld)}";
         if (configuration.PlayerMapIconsBlacklist.Contains(key)) return null;
-        if (configuration.PlayerMapIconsWhitelisted && configuration.PlayerMapIconsWhitelist.Contains(key)) return WhitelistColor(key);
-        if (configuration.PlayerMapIconsFriends && chara->IsFriend) return configuration.PlayerMapIconsColors.Friends;
-        if (configuration.PlayerMapIconsFreeCompany && SameFreeCompany(chara, (Character*)local)) return configuration.PlayerMapIconsColors.FreeCompany;
-        if (configuration.PlayerMapIconsAll) return configuration.PlayerMapIconsColors.AllPlayers;
+        if (configuration.PlayerMapIconsWhitelisted && configuration.PlayerMapIconsWhitelist.Contains(key)) return (WhitelistColor(key), WhitelistMinimap(key));
+        if (configuration.PlayerMapIconsFriends && chara->IsFriend) return (configuration.PlayerMapIconsColors.Friends, configuration.PlayerMapIconsMinimapFriends);
+        if (configuration.PlayerMapIconsFreeCompany && SameFreeCompany(chara, (Character*)local)) return (configuration.PlayerMapIconsColors.FreeCompany, configuration.PlayerMapIconsMinimapFreeCompany);
+        if (configuration.PlayerMapIconsAll) return (configuration.PlayerMapIconsColors.AllPlayers, configuration.PlayerMapIconsMinimapAll);
         return null;
     }
 
@@ -98,7 +98,7 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
             : (configuration.PlayerMapIconsBlacklist, configuration.PlayerMapIconsWhitelist);
         remove.Remove(key);
         add.Add(key);
-        if (!whitelist) configuration.PlayerMapIconsPlayerColors.Remove(key);
+        if (!whitelist) ClearPlayerSettings(key);
         configuration.Save();
     }
 
@@ -106,20 +106,37 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
     {
         configuration.PlayerMapIconsWhitelist.Remove(key);
         configuration.PlayerMapIconsBlacklist.Remove(key);
-        configuration.PlayerMapIconsPlayerColors.Remove(key);
+        ClearPlayerSettings(key);
         configuration.Save();
     }
 
     public Vector3 WhitelistColor(string key) =>
         configuration.PlayerMapIconsPlayerColors.TryGetValue(key, out var color) ? color : configuration.PlayerMapIconsColors.Whitelisted;
 
-    public bool HasCustomColor(string key) => configuration.PlayerMapIconsPlayerColors.ContainsKey(key);
+    public bool WhitelistMinimap(string key) =>
+        configuration.PlayerMapIconsPlayerMinimap.TryGetValue(key, out var show) ? show : configuration.PlayerMapIconsMinimapWhitelisted;
+
+    public bool HasPlayerSettings(string key) =>
+        configuration.PlayerMapIconsPlayerColors.ContainsKey(key) || configuration.PlayerMapIconsPlayerMinimap.ContainsKey(key);
 
     public void SetCustomColor(string key, Vector3 color) => configuration.PlayerMapIconsPlayerColors[key] = color;
 
-    public void ClearCustomColor(string key)
+    public void SetPlayerMinimap(string key, bool show)
     {
-        if (configuration.PlayerMapIconsPlayerColors.Remove(key)) configuration.Save();
+        configuration.PlayerMapIconsPlayerMinimap[key] = show;
+        configuration.Save();
+    }
+
+    public void ResetPlayerSettings(string key)
+    {
+        ClearPlayerSettings(key);
+        configuration.Save();
+    }
+
+    private void ClearPlayerSettings(string key)
+    {
+        configuration.PlayerMapIconsPlayerColors.Remove(key);
+        configuration.PlayerMapIconsPlayerMinimap.Remove(key);
     }
 
     private void OnMenuOpened(IMenuOpenedArgs args)
@@ -162,31 +179,27 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
 
         var colors = configuration.PlayerMapIconsColors;
         ImGui.Indent();
-        var minimap = configuration.PlayerMapIconsMinimap;
-        if (ImGui.Checkbox("Also Show on Minimap", ref minimap))
-        {
-            configuration.PlayerMapIconsMinimap = minimap;
-            configuration.Save();
-        }
-        ImGuiUtil.Tooltip("Shows the same players on the minimap. Anyone past the edge of the minimap is pinned to its rim.");
-
         DistanceSetting();
         Option("All Players", configuration.PlayerMapIconsAll, v => configuration.PlayerMapIconsAll = v, ref colors.AllPlayers,
+               configuration.PlayerMapIconsMinimapAll, v => configuration.PlayerMapIconsMinimapAll = v,
                "Show everyone nearby. Friends, FC members and whitelisted players keep their own colours.");
         Option("Friends", configuration.PlayerMapIconsFriends, v => configuration.PlayerMapIconsFriends = v, ref colors.Friends,
+               configuration.PlayerMapIconsMinimapFriends, v => configuration.PlayerMapIconsMinimapFriends = v,
                "Show players on your friend list.");
         Option("Free Company Members", configuration.PlayerMapIconsFreeCompany, v => configuration.PlayerMapIconsFreeCompany = v, ref colors.FreeCompany,
+               configuration.PlayerMapIconsMinimapFreeCompany, v => configuration.PlayerMapIconsMinimapFreeCompany = v,
                "Show players with your Free Company tag. Matches by tag, so another FC with the same tag will also show.");
         Option("Whitelisted Players", configuration.PlayerMapIconsWhitelisted, v => configuration.PlayerMapIconsWhitelisted = v, ref colors.Whitelisted,
+               configuration.PlayerMapIconsMinimapWhitelisted, v => configuration.PlayerMapIconsMinimapWhitelisted = v,
                "Show players you've added to the whitelist. Turning this off keeps your list but stops them standing out.");
         ImGui.Unindent();
 
         ImGui.Spacing();
         if (ImGui.Button("Manage Players")) togglePlayerListWindow();
-        ImGuiUtil.Tooltip("Whitelisted players always show, and can each be given their own colour. Blacklisted players never show, even with All Players on. You can also right-click a player to add them.");
+        ImGuiUtil.Tooltip("Whitelisted players always show, and can each be given their own colour and minimap setting. Blacklisted players never show, even with All Players on. You can also right-click a player to add them.");
     }
 
-    private void Option(string label, bool value, Action<bool> set, ref Vector3 color, string tooltip)
+    private void Option(string label, bool value, Action<bool> set, ref Vector3 color, bool minimap, Action<bool> setMinimap, string tooltip)
     {
         ImGui.ColorEdit3($"##{label}Color", ref color, ImGuiColorEditFlags.NoInputs);
         if (ImGui.IsItemDeactivatedAfterEdit()) configuration.Save();
@@ -199,6 +212,16 @@ public sealed unsafe class PlayerMapIcons : Tweak, IDisposable
             configuration.Save();
         }
         ImGuiUtil.Tooltip(tooltip);
+
+        ImGui.SameLine(ImGui.GetFontSize() * 16.0f);
+        ImGui.BeginDisabled(!value);
+        if (ImGui.Checkbox($"Minimap##{label}Minimap", ref minimap))
+        {
+            setMinimap(minimap);
+            configuration.Save();
+        }
+        ImGui.EndDisabled();
+        ImGuiUtil.Tooltip("Also show these players on the minimap. Anyone past its edge is pinned to the rim.");
     }
 
     private void DistanceSetting()

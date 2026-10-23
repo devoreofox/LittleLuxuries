@@ -39,7 +39,6 @@ public class Configuration : IPluginConfiguration
     public int EstateBookmarkTravelCity { get; set; } = 8;
 
     public bool PlayerMapIcons { get; set; } = false;
-    public bool PlayerMapIconsMinimap { get; set; } = false;
     public bool PlayerMapIconsAll { get; set; } = false;
     public bool PlayerMapIconsFriends { get; set; } = true;
     public bool PlayerMapIconsFreeCompany { get; set; } = false;
@@ -49,6 +48,11 @@ public class Configuration : IPluginConfiguration
     public HashSet<string> PlayerMapIconsBlacklist { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public MarkerColors PlayerMapIconsColors { get; set; } = new();
     public Dictionary<string, Vector3> PlayerMapIconsPlayerColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public bool PlayerMapIconsMinimapAll { get; set; } = false;
+    public bool PlayerMapIconsMinimapFriends { get; set; } = false;
+    public bool PlayerMapIconsMinimapFreeCompany { get; set; } = false;
+    public bool PlayerMapIconsMinimapWhitelisted { get; set; } = false;
+    public Dictionary<string, bool> PlayerMapIconsPlayerMinimap { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();

@@ -58,7 +58,7 @@ public class PlayerListWindow : Window
         _name = string.Empty;
     }
 
-    private void DrawList(string title, HashSet<string> list, bool colored)
+    private void DrawList(string title, HashSet<string> list, bool whitelist)
     {
         ImGui.Spacing();
         ImGui.TextColored(new Vector4(0.7f, 0.5f, 1.0f, 1.0f), title);
@@ -75,8 +75,9 @@ public class PlayerListWindow : Window
         foreach (var key in list.ToList())
         {
             ImGui.PushID(title + key);
-            if (colored) DrawColor(key);
+            if (whitelist) DrawColor(key);
             ImGui.Text(key);
+            if (whitelist) DrawMinimap(key, buttonWidth);
             ImGui.SameLine();
             ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - buttonWidth);
             if (ImGui.Button("Remove", new Vector2(buttonWidth, 0))) tweak.RemoveFromLists(key);
@@ -92,9 +93,19 @@ public class PlayerListWindow : Window
         ImGuiUtil.Tooltip("Give this player their own marker colour. Overrides the Whitelisted Players colour.");
         ImGui.SameLine();
 
-        if (!tweak.HasCustomColor(key)) return;
-        if (ImGuiComponents.IconButton(FontAwesomeIcon.Undo)) tweak.ClearCustomColor(key);
-        ImGuiUtil.Tooltip("Go back to the Whitelisted Players colour.");
+        if (!tweak.HasPlayerSettings(key)) return;
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.Undo)) tweak.ResetPlayerSettings(key);
+        ImGuiUtil.Tooltip("Go back to the Whitelisted Players colour and minimap setting.");
         ImGui.SameLine();
+    }
+
+    private void DrawMinimap(string key, float buttonWidth)
+    {
+        var show = tweak.WhitelistMinimap(key);
+        var width = ImGui.GetFrameHeight() + ImGui.GetStyle().ItemInnerSpacing.X + ImGui.CalcTextSize("Minimap").X;
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(ImGui.GetContentRegionMax().X - buttonWidth - width - ImGui.GetStyle().ItemSpacing.X);
+        if (ImGui.Checkbox("Minimap", ref show)) tweak.SetPlayerMinimap(key, show);
+        ImGuiUtil.Tooltip("Show this player on the minimap. Overrides the Whitelisted Players minimap setting.");
     }
 }

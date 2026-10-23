@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.3.0.0 - 2026-10-14
+
+### New Tweaks
+- Player Map Icons:
+  - Shows nearby players on the map with markers styled like the game's own party member markers, and they tuck behind other game windows just like native icons
+  - Choose who appears: All Players, Friends, Free Company Members and Whitelisted Players, each with its own marker colour
+  - Choose which groups also show on the minimap, and override it for individual whitelisted players; anyone past its edge is pinned to the rim
+  - Set how far away players can be and still show, with a slider or by typing the distance in yalms
+  - Hover a marker on the map to see who it is
+  - Whitelist players to always show them, and give any of them their own colour or minimap setting; blacklist players so they never show, even with All Players on
+  - Manage both lists from the Manage Players window, picking the world from the same region and data center list as Personal Estate Labels, or right-click a player and choose "Always Show on Map" or "Never Show on Map"
+  - Party and alliance members are left to the game's own markers, and nothing is shown in PvP
+
+### Notes
+- Player Map Icons is off by default - enable it in the tweak window
+
 ## v1.2.0.0 - 2026-10-01
 
 ### Improved

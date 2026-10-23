@@ -79,7 +79,7 @@ public sealed unsafe class MinimapMarkers : IDisposable
         if (_container is null) return;
 
         var local = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
-        var show = configuration.PlayerMapIcons && configuration.PlayerMapIconsMinimap && !clientState.IsPvP && local is not null;
+        var show = configuration.PlayerMapIcons && !clientState.IsPvP && local is not null;
 
         var lockNode = addon->GetNodeById(4);
         var rotationNode = addon->GetNodeById(8);
@@ -103,8 +103,8 @@ public sealed unsafe class MinimapMarkers : IDisposable
         {
             var (marker, markerBase) = _markers[i];
             var chara = characters[i].Value;
-            var color = chara is null ? null : tweak.MarkerColor(chara, local);
-            if (color is null)
+            var style = chara is null ? null : tweak.Marker(chara, local);
+            if (style is not { Minimap: true })
             {
                 marker.IsVisible = false;
                 continue;
@@ -116,7 +116,7 @@ public sealed unsafe class MinimapMarkers : IDisposable
             if (length > radius) offset *= radius / length;
 
             marker.Position = center + offset - new Vector2(MarkerSize / 2.0f);
-            markerBase.MultiplyColor = color.Value;
+            markerBase.MultiplyColor = style.Value.Color;
             marker.IsVisible = true;
         }
     }
