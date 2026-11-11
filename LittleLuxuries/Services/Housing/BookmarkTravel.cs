@@ -83,7 +83,7 @@ public sealed unsafe class BookmarkTravel
         }
 
         chatGui.Print(sameWorld
-            ? $"Teleporting toward {name} ({addresses.FormatBookmark(b)}). Take the aethernet from there."
-            : $"{name} is on another world ({addresses.FormatBookmark(b)}). Teleporting so you can world visit.");
+            ? $"Teleporting toward {name} ({addresses.FormatBookmark(b, true)}). Take the aethernet from there."
+            : $"{name} is on another world ({addresses.FormatBookmark(b, true)}). Teleporting so you can world visit.");
     }
 }

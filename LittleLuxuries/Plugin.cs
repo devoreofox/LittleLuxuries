@@ -8,6 +8,7 @@ using Dalamud.Plugin;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ECommons;
+using KamiToolKit;
 using LittleLuxuries.Services.Dpose;
 using LittleLuxuries.Services.Housing;
 using LittleLuxuries.Tweaks;
@@ -32,6 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
     [PluginService] internal static IPartyList PartyList { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
+    [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
 
     [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
 
@@ -45,6 +47,7 @@ public sealed class Plugin : IDalamudPlugin
     public readonly WindowSystem WindowSystem = new("Little Luxuries");
     private MainWindow MainWindow { get; init; }
     private ArrowWhitelistWindow _arrowWhitelistWindow = null!;
+    private PlayerListWindow _playerListWindow = null!;
     private ChangelogWindow ChangelogWindow { get; init; }
 
     public Plugin()
@@ -52,6 +55,7 @@ public sealed class Plugin : IDalamudPlugin
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         ECommonsMain.Init(PluginInterface, this);
+        var ktkReady = KamiToolKitLibrary.InitializeAsync(PluginInterface, "Little Luxuries");
 
         MainWindow = new MainWindow(this, ToggleChangelogUi);
         ChangelogWindow = new ChangelogWindow();
@@ -60,6 +64,8 @@ public sealed class Plugin : IDalamudPlugin
         var cpose = new CposeController(ClientState, Framework);
 
         var housingArrowHider = new HousingArrowHider(NamePlateGui, ClientState, GameGui, Framework, _scanner, () => _arrowWhitelistWindow.Toggle(), Configuration);
+        var playerMapIcons = new PlayerMapIcons(Framework, DataManager, ContextMenu, ClientState, TextureProvider, ktkReady, () => _playerListWindow.Toggle(), Configuration);
+        _playerListWindow = new PlayerListWindow(playerMapIcons, Configuration, new WorldPicker(PlayerState));
 
         _arrowWhitelistWindow = new ArrowWhitelistWindow(housingArrowHider, _scanner);
 
@@ -84,6 +90,7 @@ public sealed class Plugin : IDalamudPlugin
         Tweaks.Add(new CommendQueue(ContextMenu, Condition, ChatGui, ClientState, PartyList, Framework, Configuration));
         Tweaks.Add(new BlindFaith());
         Tweaks.Add(new QuickCommands(CommandManager, ObjectTable, ClientState, ChatGui, Framework, Configuration));
+        Tweaks.Add(playerMapIcons);
 
         if (!Configuration.NewTweaksInitialized)
         {
@@ -96,6 +103,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(MainWindow);
         WindowSystem.AddWindow(_arrowWhitelistWindow);
         WindowSystem.AddWindow(ChangelogWindow);
+        WindowSystem.AddWindow(_playerListWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
@@ -127,7 +135,11 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
         ChangelogWindow.Dispose();
 
-        foreach (var tweak in Tweaks) (tweak as IDisposable)?.Dispose();
+        Framework.RunOnFrameworkThread(() =>
+        {
+            foreach (var tweak in Tweaks) (tweak as IDisposable)?.Dispose();
+            KamiToolKitLibrary.Dispose();
+        }).Wait();
 
         CommandManager.RemoveHandler(CommandName);
 

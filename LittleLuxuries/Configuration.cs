@@ -1,7 +1,9 @@
 ﻿using Dalamud.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using LittleLuxuries.Models.Housing;
+using LittleLuxuries.Models.PlayerMapIcons;
 
 namespace LittleLuxuries;
 
@@ -32,9 +34,36 @@ public class Configuration : IPluginConfiguration
 
     public bool PersonalEstateLabels { get; set; } = false;
     public Dictionary<ulong, EstateLabelCharacter> EstateLabels { get; set; } = new();
-    public bool EstateLabelsNumbers { get; set; } = false;
+    public bool EstateLabelsWorld { get; set; } = false;
+    public bool EstateLabelsDistrict { get; set; } = true;
+    public bool EstateLabelsWard { get; set; } = false;
+    public bool EstateLabelsPlot { get; set; } = false;
+    public bool EstateLabelsNumbers { set => EstateLabelsWard = EstateLabelsPlot = value; }
     public bool EstateLabelsLabelFirst { get; set; } = false;
     public int EstateBookmarkTravelCity { get; set; } = 8;
+    public bool EstateBookmarkWorld { get; set; } = true;
+    public bool EstateBookmarkDistrict { get; set; } = true;
+    public bool EstateBookmarkWard { get; set; } = true;
+    public bool EstateBookmarkPlot { get; set; } = true;
+    public bool EstateLabelsSplitHeadings { get; set; } = false;
+    public string EstateLabelsDirectHeading { get; set; } = string.Empty;
+    public string EstateLabelsBookmarkHeading { get; set; } = string.Empty;
+
+    public bool PlayerMapIcons { get; set; } = false;
+    public bool PlayerMapIconsAll { get; set; } = false;
+    public bool PlayerMapIconsFriends { get; set; } = true;
+    public bool PlayerMapIconsFreeCompany { get; set; } = false;
+    public bool PlayerMapIconsWhitelisted { get; set; } = true;
+    public float PlayerMapIconsDistance { get; set; } = 150.0f;
+    public HashSet<string> PlayerMapIconsWhitelist { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> PlayerMapIconsBlacklist { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public MarkerColors PlayerMapIconsColors { get; set; } = new();
+    public Dictionary<string, Vector3> PlayerMapIconsPlayerColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public bool PlayerMapIconsMinimapAll { get; set; } = false;
+    public bool PlayerMapIconsMinimapFriends { get; set; } = false;
+    public bool PlayerMapIconsMinimapFreeCompany { get; set; } = false;
+    public bool PlayerMapIconsMinimapWhitelisted { get; set; } = false;
+    public Dictionary<string, bool> PlayerMapIconsPlayerMinimap { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     public HashSet<string> FurnishingWhitelist { get; set; } = new();
     public Dictionary<ulong, Dictionary<uint, string>> UserWhitelist { get; set; } = new();

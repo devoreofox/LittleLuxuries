@@ -12,7 +12,8 @@ A Dalamud plugin for FFXIV that collects small quality-of-life tweaks designed t
 - **Estate Key** - Lock or unlock your estate's guest access and toggle teleport permission from chat, without opening the housing menus.
 - **Hide Housing Arrows** - Hides the directional arrows that appear in housing areas.
 - **Party Finder Cleanup** *(coming soon)* - Removes duplicate listings from the Party Finder's Other tab.
-- **Personal Estate Labels** - Give your estates, shared estates and apartment custom names in the Teleport menu, optionally with ward and plot shown alongside, and reorder them to taste. Bookmark friends' houses on any world and click them to travel there, all the way to the plot with Lifestream.
+- **Personal Estate Labels** - Give your estates, shared estates and apartment custom names in the Teleport menu, pick which parts of the address show alongside (world, district, ward, plot), and reorder them to taste. Bookmark friends' houses on any world and click them to travel there, all the way to the plot with Lifestream.
+- **Player Map Icons** - Shows nearby players on the map, and optionally the minimap, with native-style markers. Pick who appears (everyone, friends, Free Company members, or your whitelist), colour each group or individual players, choose who also appears on the minimap, and blacklist anyone you never want to see.
 - **Quick Commands** - Chat shortcuts for common interactions: target the nearest object, accept a duty, enter a house or apartment, and use an inventory item by name.
 
 ## Installation
@@ -42,6 +43,11 @@ Type `/llux` in-game to open the tweak manager. Select a tweak from the left pan
 - `/itemaction <item name>` - Use an inventory item by its name (Quick Commands)
 
 `target` is optional for the Estate Key commands - `personal`, `apartment`, `chambers`, or `fc`. Leave it blank to use your first owned estate. These commands work only while on your home world and outside instanced content.
+
+### Right-click menu
+
+- **Always Show on Map** / **Never Show on Map** - Add a player to the Player Map Icons whitelist or blacklist
+- **Reset Map Visibility** - Remove a player from either list
 
 ## Contributing
 
