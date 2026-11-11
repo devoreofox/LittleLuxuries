@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0.1 - 2026-11-11
+
+### Fixed
+- Little Luxuries failing to load after updating to v1.3.0.0 oops sorry x)
+
 ## v1.3.0.0 - 2026-11-11
 
 ### New Tweaks
