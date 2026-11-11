@@ -53,15 +53,8 @@ jobs:
       - name: Create zip
         shell: pwsh
         run: |
-          $output = 'LittleLuxuries/bin/Release'
-          $files = @(
-            "$output/LittleLuxuries.dll",
-            "$output/LittleLuxuries.json",
-            "$output/ECommons.dll",
-            "$output/LittleLuxuries.deps.json",
-            "$output/images"
-          )
-          Compress-Archive -Path $files -DestinationPath 'LittleLuxuries.zip'
+          Get-ChildItem 'LittleLuxuries/bin/Release' -Exclude 'LittleLuxuries','*.pdb','*.xml' |
+            Compress-Archive -DestinationPath 'LittleLuxuries.zip'
       - name: Update repo.json
         shell: pwsh
         run: |
