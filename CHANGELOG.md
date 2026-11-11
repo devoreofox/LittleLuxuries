@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.0.0 - 2026-10-14
+## v1.3.0.0 - 2026-11-11
 
 ### New Tweaks
 - Player Map Icons:
