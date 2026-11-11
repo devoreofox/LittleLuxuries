@@ -13,6 +13,18 @@
   - Manage both lists from the Manage Players window, picking the world from the same region and data center list as Personal Estate Labels, or right-click a player and choose "Always Show on Map" or "Never Show on Map"
   - Party and alliance members are left to the game's own markers, and nothing is shown in PvP
 
+### Improved
+- Personal Estate Labels:
+  - Choose exactly what the location shows: world, district, ward and plot (or apartment room) can each be turned on or off
+  - Your own estates and your bookmarks each get their own set of toggles, so they can look different
+  - Your existing setup carries over: estates keep showing ward and plot if you had that turned on, and bookmarks still show everything
+  - Option to split Residential Areas into two headings, "Direct Teleport" for your estates on this world and "Bookmarks" for everything else, and rename either one
+  - Forget a character you no longer play, along with its labels and bookmarks (hold Ctrl and click)
+
+### Fixed
+- Personal Estate Labels:
+  - With the Teleport menu set to display by expansion, bookmarks now sit with your own estates under Residential Areas, instead of under a second heading in the Shadowbringers tab
+
 ### Notes
 - Player Map Icons is off by default - enable it in the tweak window
 

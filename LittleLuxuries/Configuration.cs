@@ -34,9 +34,20 @@ public class Configuration : IPluginConfiguration
 
     public bool PersonalEstateLabels { get; set; } = false;
     public Dictionary<ulong, EstateLabelCharacter> EstateLabels { get; set; } = new();
-    public bool EstateLabelsNumbers { get; set; } = false;
+    public bool EstateLabelsWorld { get; set; } = false;
+    public bool EstateLabelsDistrict { get; set; } = true;
+    public bool EstateLabelsWard { get; set; } = false;
+    public bool EstateLabelsPlot { get; set; } = false;
+    public bool EstateLabelsNumbers { set => EstateLabelsWard = EstateLabelsPlot = value; }
     public bool EstateLabelsLabelFirst { get; set; } = false;
     public int EstateBookmarkTravelCity { get; set; } = 8;
+    public bool EstateBookmarkWorld { get; set; } = true;
+    public bool EstateBookmarkDistrict { get; set; } = true;
+    public bool EstateBookmarkWard { get; set; } = true;
+    public bool EstateBookmarkPlot { get; set; } = true;
+    public bool EstateLabelsSplitHeadings { get; set; } = false;
+    public string EstateLabelsDirectHeading { get; set; } = string.Empty;
+    public string EstateLabelsBookmarkHeading { get; set; } = string.Empty;
 
     public bool PlayerMapIcons { get; set; } = false;
     public bool PlayerMapIconsAll { get; set; } = false;

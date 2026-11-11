@@ -50,7 +50,7 @@ public sealed class BookmarkTable
 
             ImGui.TableNextColumn();
             ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(addresses.FormatBookmark(b));
+            ImGui.TextUnformatted(addresses.FormatBookmark(b, true));
 
             ImGui.TableNextColumn();
             var label = b.Label;

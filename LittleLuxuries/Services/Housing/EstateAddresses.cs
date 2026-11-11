@@ -24,25 +24,34 @@ public sealed class EstateAddresses
 
     public string DistrictName(int city) => PlaceName(CityDistricts[city]);
 
-    public string FormatLocation(HouseId h, string placeName)
+    public string FormatLocation(HouseId h, string placeName) =>
+        Compose(h.WorldId, placeName, h.WardIndex + 1, Unit(h.IsApartment, h.ApartmentDivision == 1, h.RoomNumber, h.PlotIndex + 1),
+                configuration.EstateLabelsWorld, configuration.EstateLabelsDistrict, configuration.EstateLabelsWard, configuration.EstateLabelsPlot);
+
+    public string FormatBookmark(EstateBookmark b, bool full = false) =>
+        Compose(b.World, DistrictName(b.City), b.Ward, Unit(b.IsApartment, b.ApartmentSubdivision, b.Apartment, b.Plot),
+                full || configuration.EstateBookmarkWorld, full || configuration.EstateBookmarkDistrict,
+                full || configuration.EstateBookmarkWard, full || configuration.EstateBookmarkPlot);
+
+    private static string Unit(bool isApartment, bool subdivision, int room, int plot) =>
+        isApartment ? $"{(subdivision ? "Sub " : "")}Apt {room}" : $"P{plot}";
+
+    private string Compose(int world, string district, int ward, string unit, bool showWorld, bool showDistrict, bool showWard, bool showPlot)
     {
-        var ward = h.WardIndex + 1;
-        if (configuration.EstateLabelsNumbers)
+        var name = string.Join(", ", new[]
         {
-            return h.IsApartment
-                       ? $"{placeName} (W{ward}{(h.ApartmentDivision == 1 ? " Sub" : "")} Apt {h.RoomNumber})"
-                       : $"{placeName} (W{ward} P{h.PlotIndex + 1})";
-        }
+            showWorld ? dataManager.GetExcelSheet<World>().GetRow((uint)world).Name.ExtractText() : null,
+            showDistrict ? district : null,
+        }.OfType<string>());
 
-        return placeName;
-    }
+        var numbers = string.Join(" ", new[]
+        {
+            showWard ? $"W{ward}" : null,
+            showPlot ? unit : null,
+        }.OfType<string>());
 
-    public string FormatBookmark(EstateBookmark b)
-    {
-        var world = dataManager.GetExcelSheet<World>().GetRow((uint)b.World).Name.ExtractText();
-        var place = DistrictName(b.City);
-        var unit = b.IsApartment ? $"{(b.ApartmentSubdivision ? "Sub " : "")}Apt {b.Apartment}" : $"P{b.Plot}";
-        return $"{world}, {place} (W{b.Ward} {unit})";
+        if (numbers.Length == 0) return name;
+        return name.Length == 0 ? numbers : $"{name} ({numbers})";
     }
 
     public static EstateBookmark? AsBookmark(ulong houseId, EstateLabel estate)

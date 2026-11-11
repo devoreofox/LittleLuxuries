@@ -15,8 +15,11 @@ namespace LittleLuxuries.Services.Housing;
 
 public sealed unsafe class TeleportListEditor : IDisposable
 {
-    private const uint ResidentialHeaderKind = 0x900, ResidentialRowKind = 0x50901;
+    private const uint HousingIcon = 0x50000, RowFlag = 1;
+    private const uint RegionResidentialHeader = 0x900, ExpansionResidentialHeader = 0x200;
     private const uint ResidentialAreasAddonRow = 8495;
+
+    public const string DefaultDirectHeading = "Direct Teleport", DefaultBookmarkHeading = "Bookmarks";
 
     private readonly IAddonLifecycle addonLifecycle;
     private readonly IDataManager dataManager;
@@ -107,19 +110,35 @@ public sealed unsafe class TeleportListEditor : IDisposable
                                   .Concat(character.Bookmarks)
                                   .ToList();
 
+        var headerKind = values[0].UInt == 1 ? RegionResidentialHeader : ExpansionResidentialHeader;
+        var rowKind = HousingIcon | headerKind | RowFlag;
+        var hasResidential = values[3].UInt == headerKind;
+        var split = configuration.EstateLabelsSplitHeadings;
+
+        if (split && hasResidential) values[7].SetManagedString(HeadingOr(configuration.EstateLabelsDirectHeading, DefaultDirectHeading));
+
         if (travelRows.Count == 0) return;
 
+        var bookmarkHeading = split
+                                  ? HeadingOr(configuration.EstateLabelsBookmarkHeading, DefaultBookmarkHeading)
+                                  : dataManager.GetExcelSheet<Addon>().GetRow(ResidentialAreasAddonRow).Text.ExtractText();
+
         int insertAt;
-        if (values[3].UInt == ResidentialHeaderKind)
+        if (hasResidential)
         {
             var end = 2 + (int)values[2].UInt * 8;
             insertAt = 10;
             while (insertAt < end && values[insertAt + 3].Int >= 0) insertAt += 8;
+
+            if (split)
+            {
+                if (!InsertRow(values, valueCount, insertAt, headerKind, "", bookmarkHeading, 0, "")) return;
+                insertAt += 8;
+            }
         }
         else
         {
-            var header = dataManager.GetExcelSheet<Addon>().GetRow(ResidentialAreasAddonRow).Text.ExtractText();
-            if (!InsertRow(values, valueCount, 2, ResidentialHeaderKind, "", header, 0, "")) return;
+            if (!InsertRow(values, valueCount, 2, headerKind, "", bookmarkHeading, 0, "")) return;
             insertAt = 10;
         }
 
@@ -133,7 +152,7 @@ public sealed unsafe class TeleportListEditor : IDisposable
             var cost = CostTo(teleports, (uint)(sameWorld ? b.City : configuration.EstateBookmarkTravelCity));
             var costText = cost is { } c ? c.ToString("N0", CultureInfo.InvariantCulture) + "\uE049" : "";
 
-            if (!InsertRow(values, valueCount, insertAt, ResidentialRowKind, labelFirst ? b.Label : location, labelFirst ? location : b.Label,
+            if (!InsertRow(values, valueCount, insertAt, rowKind, labelFirst ? b.Label : location, labelFirst ? location : b.Label,
                            (int)(cost ?? 0), costText)) break;
             bookmarkBlocks[(uint)((insertAt - 2) / 8)] = b;
             insertAt += 8;
@@ -153,6 +172,8 @@ public sealed unsafe class TeleportListEditor : IDisposable
 
         travel.Go(bookmark);
     }
+
+    private static string HeadingOr(string heading, string fallback) => string.IsNullOrWhiteSpace(heading) ? fallback : heading;
 
     private static uint? CostTo(ReadOnlySpan<TeleportInfo> teleports, uint aetheryte)
     {
